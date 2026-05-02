@@ -48,3 +48,23 @@ class DebateSummary(BaseModel):
 class SSEEvent(BaseModel):
     type: str
     data: dict | str
+
+
+class HumanDebateStartRequest(BaseModel):
+    topic: str
+    human_side: str  # "pro" | "con"
+
+
+class HumanDebateStartResponse(BaseModel):
+    session_id: str
+    status: str
+
+
+class HumanDebateStatusResponse(BaseModel):
+    session_id: str
+    status: str
+    error_message: Optional[str] = None
+
+
+class HumanArgumentRequest(BaseModel):
+    content: str

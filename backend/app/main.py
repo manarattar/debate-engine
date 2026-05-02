@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import create_tables
-from app.routers import debate
+from app.routers import debate, human_debate
 from app.config import get_settings
 import os
 
@@ -17,6 +17,7 @@ app.add_middleware(
 )
 
 app.include_router(debate.router, prefix="/api")
+app.include_router(human_debate.router, prefix="/api")
 
 
 @app.on_event("startup")

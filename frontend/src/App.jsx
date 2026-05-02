@@ -1,6 +1,7 @@
 import { useState } from "react";
 import TopicInput from "./components/TopicInput";
 import DebateArena from "./components/DebateArena";
+import HumanDebatePage from "./components/HumanDebatePage";
 import HistoryPanel from "./components/HistoryPanel";
 import { getDebate } from "./api";
 import "./index.css";
@@ -33,6 +34,7 @@ async function* streamDebateFetch(topic) {
 }
 
 export default function App() {
+  const [debateMode, setDebateMode] = useState("ai"); // "ai" | "human"
   const [phase, setPhase] = useState("idle");
   const [topic, setTopic] = useState("");
   const [events, setEvents] = useState([]);       // completed arguments
@@ -44,6 +46,10 @@ export default function App() {
 
   const handleSubmit = async (newTopic) => {
     setTopic(newTopic);
+    if (debateMode === "human") {
+      setPhase("human");
+      return;
+    }
     setEvents([]);
     setStreaming(null);
     setStatus(null);
@@ -112,6 +118,7 @@ export default function App() {
 
   const handleReset = () => {
     setPhase("idle");
+    setDebateMode("ai");
     setTopic("");
     setEvents([]);
     setStreaming(null);
@@ -126,7 +133,32 @@ export default function App() {
       <HistoryPanel onSelect={handleHistorySelect} currentTopic={topic} />
 
       <div className="flex-1 flex flex-col">
-        {phase === "idle" && <TopicInput onSubmit={handleSubmit} isLoading={false} />}
+        {phase === "idle" && (
+          <div className="flex flex-col items-center">
+            {/* Mode toggle */}
+            <div className="flex gap-1 bg-slate-800 p-1 rounded-xl mt-8 mx-6">
+              <button
+                onClick={() => setDebateMode("ai")}
+                className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors
+                  ${debateMode === "ai" ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
+              >
+                ⚔️ Watch AI Debate
+              </button>
+              <button
+                onClick={() => setDebateMode("human")}
+                className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors
+                  ${debateMode === "human" ? "bg-violet-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
+              >
+                🧑 Debate the AI
+              </button>
+            </div>
+            <TopicInput
+              onSubmit={handleSubmit}
+              isLoading={false}
+              submitLabel={debateMode === "human" ? "🧑 Choose My Side →" : undefined}
+            />
+          </div>
+        )}
 
         {phase === "debating" && (
           <div className="flex flex-col flex-1">
@@ -168,6 +200,18 @@ export default function App() {
               winner={winner}
               isLive={false}
             />
+          </div>
+        )}
+
+        {phase === "human" && (
+          <div className="flex flex-col flex-1">
+            <div className="flex justify-between items-center px-6 py-3 border-b border-slate-800">
+              <span className="text-slate-400 text-sm">Human vs AI</span>
+              <button onClick={handleReset} className="text-slate-500 hover:text-slate-300 text-sm transition-colors">
+                ✕ Exit
+              </button>
+            </div>
+            <HumanDebatePage topic={topic} onReset={handleReset} />
           </div>
         )}
 

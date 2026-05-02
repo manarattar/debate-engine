@@ -8,7 +8,7 @@ const EXAMPLES = [
   "Nuclear energy is the best solution to climate change",
 ];
 
-export default function TopicInput({ onSubmit, isLoading }) {
+export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
   const [topic, setTopic] = useState("");
 
   const handleSubmit = (e) => {
@@ -47,11 +47,9 @@ export default function TopicInput({ onSubmit, isLoading }) {
           className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-4 rounded-xl text-lg transition-colors flex items-center justify-center gap-2"
         >
           {isLoading ? (
-            <>
-              <span className="animate-spin">⟳</span> Running debate...
-            </>
+            <><span className="animate-spin">⟳</span> Running debate...</>
           ) : (
-            "⚔️ Start Debate"
+            submitLabel || "⚔️ Start Debate"
           )}
         </button>
       </form>

@@ -46,3 +46,48 @@ export async function getDebate(debateId) {
   const res = await api.get(`/debate/${debateId}`);
   return res.data;
 }
+
+// ── Human vs AI debate ────────────────────────────────────────────────────
+
+export async function startHumanDebate(topic, humanSide) {
+  const res = await api.post("/human-debate/start", { topic, human_side: humanSide });
+  return res.data;
+}
+
+export async function getHumanDebateStatus(sessionId) {
+  const res = await api.get(`/human-debate/${sessionId}/status`);
+  return res.data;
+}
+
+async function* _ssePost(path, body) {
+  const base = import.meta.env.VITE_API_URL || "";
+  const res = await fetch(`${base}/api${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const raw = line.slice(6).trim();
+        if (raw) { try { yield JSON.parse(raw); } catch {} }
+      }
+    }
+  }
+}
+
+export function streamHumanOpening(sessionId, content) {
+  return _ssePost(`/human-debate/${sessionId}/opening`, { content });
+}
+
+export function streamHumanRebuttal(sessionId, content) {
+  return _ssePost(`/human-debate/${sessionId}/rebuttal`, { content });
+}
