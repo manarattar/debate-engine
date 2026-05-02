@@ -22,7 +22,6 @@ app.include_router(debate.router, prefix="/api")
 @app.on_event("startup")
 def startup():
     os.makedirs("./data", exist_ok=True)
-    os.makedirs("./chroma", exist_ok=True)
     create_tables()
 
 
