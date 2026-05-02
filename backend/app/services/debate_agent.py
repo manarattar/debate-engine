@@ -86,8 +86,12 @@ Structure your verdict as:
 1. What the PRO side argued well
 2. What the CON side argued well
 3. Key weaknesses on each side
-4. Your verdict: which side made a more compelling overall case, and why (or declare a tie)
-End with a clear WINNER: PRO / CON / TIE line."""
+4. Your final verdict: which side made a more compelling overall case, and why
+
+You MUST end your verdict with exactly one of these three lines (the last line of your response):
+WINNER: PRO
+WINNER: CON
+WINNER: TIE"""
 
 
 async def generate_argument_streaming(
@@ -173,15 +177,24 @@ Make queries specific and likely to find strong evidence-backed arguments."""
 
 
 def extract_winner(verdict_content: str) -> str:
-    text = verdict_content.upper()
-    if "WINNER: PRO" in text or "WINNER: THE PRO" in text:
+    text = verdict_content.upper().strip()
+
+    # Check the last 100 characters first — winner line is always at the end
+    tail = text[-100:]
+    for fragment in [tail, text]:
+        if re.search(r"WINNER\s*:\s*PRO\b", fragment):
+            return "pro"
+        if re.search(r"WINNER\s*:\s*CON\b", fragment):
+            return "con"
+        if re.search(r"WINNER\s*:\s*TIE\b", fragment):
+            return "tie"
+
+    # Fallback: look for conclusive phrases
+    if re.search(r"\b(PRO WINS|PRO SIDE WINS|PRO MADE THE STRONGER|SIDE PRO)\b", text):
         return "pro"
-    if "WINNER: CON" in text or "WINNER: THE CON" in text:
+    if re.search(r"\b(CON WINS|CON SIDE WINS|CON MADE THE STRONGER|SIDE CON)\b", text):
         return "con"
-    if "WINNER: TIE" in text:
+    if re.search(r"\b(THIS IS A TIE|DECLARE A TIE|RESULT IS A TIE|CALL THIS A TIE)\b", text):
         return "tie"
-    if text.count("PRO") > text.count("CON"):
-        return "pro"
-    if text.count("CON") > text.count("PRO"):
-        return "con"
+
     return "tie"
