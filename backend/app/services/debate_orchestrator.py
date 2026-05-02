@@ -48,7 +48,7 @@ async def _stream_argument(
         })
 
 
-async def run_debate(debate_id: str, topic: str) -> AsyncGenerator[str, None]:
+async def run_debate(debate_id: str, topic: str, capture: dict = None) -> AsyncGenerator[str, None]:
     loop = asyncio.get_event_loop()
     pro_args: list[Argument] = []
     con_args: list[Argument] = []
@@ -174,11 +174,10 @@ async def run_debate(debate_id: str, topic: str) -> AsyncGenerator[str, None]:
             winner=winner,
         )
 
-        yield _sse("complete", {
-            "debate_id": debate_id,
-            "winner": winner,
-            "result": result.model_dump(),
-        })
+        if capture is not None:
+            capture["result"] = result.model_dump()
+
+        yield _sse("complete", {"debate_id": debate_id, "winner": winner})
 
     except Exception as e:
         yield _sse("error", {"message": str(e)})

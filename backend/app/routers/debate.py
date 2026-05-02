@@ -17,22 +17,15 @@ async def start_debate(request: DebateRequest, db: Session = Depends(get_db)):
     db.add(db_debate)
     db.commit()
 
-    async def stream():
-        result_data = None
-        async for chunk in run_debate(debate_id, request.topic):
-            yield chunk
-            # capture last complete event for DB save
-            try:
-                parsed = json.loads(chunk.replace("data: ", "").strip())
-                if parsed.get("type") == "complete":
-                    result_data = parsed["data"].get("result")
-            except Exception:
-                pass
+    capture: dict = {}
 
-        # Save result to DB
+    async def stream():
+        async for chunk in run_debate(debate_id, request.topic, capture):
+            yield chunk
+
         db_debate.status = "complete"
-        if result_data:
-            db_debate.result_json = json.dumps(result_data)
+        if "result" in capture:
+            db_debate.result_json = json.dumps(capture["result"])
         db.commit()
 
     return StreamingResponse(
