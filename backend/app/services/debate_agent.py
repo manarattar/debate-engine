@@ -138,6 +138,7 @@ async def generate_argument_streaming(
         if kind == "token":
             full_content += data
             yield "token", data
+            await asyncio.sleep(0.02)
         elif kind == "done":
             argument = Argument(side=side, round_name=round_name, content=full_content, citations=citations)
             yield "complete", argument
