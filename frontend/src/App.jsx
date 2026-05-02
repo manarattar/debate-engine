@@ -67,9 +67,12 @@ export default function App() {
             prev ? { ...prev, content: prev.content + msg.data.delta } : prev
           );
         } else if (msg.type === "argument") {
-          // Argument complete — move from streaming to events list
           setStreaming(null);
-          setEvents((prev) => [...prev, msg.data]);
+          if (msg.data.side === "judge") {
+            setVerdict(msg.data);
+          } else {
+            setEvents((prev) => [...prev, msg.data]);
+          }
         } else if (msg.type === "winner") {
           setWinner(msg.data.winner);
         } else if (msg.type === "complete") {
