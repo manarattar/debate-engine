@@ -7,7 +7,8 @@ import "./index.css";
 
 // SSE-based streaming using fetch (works with POST)
 async function* streamDebateFetch(topic) {
-  const res = await fetch("/api/debate", {
+  const base = import.meta.env.VITE_API_URL || "";
+  const res = await fetch(`${base}/api/debate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ topic }),
