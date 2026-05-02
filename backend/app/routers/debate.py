@@ -35,7 +35,15 @@ async def start_debate(request: DebateRequest, db: Session = Depends(get_db)):
             db_debate.result_json = json.dumps(result_data)
         db.commit()
 
-    return StreamingResponse(stream(), media_type="text/event-stream")
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
 
 
 @router.get("/debate/{debate_id}")
