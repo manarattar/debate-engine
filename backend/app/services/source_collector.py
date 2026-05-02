@@ -9,7 +9,7 @@ def _make_client() -> TavilyClient:
     return TavilyClient(api_key=settings.tavily_api_key)
 
 
-def _chunk_text(text: str, max_chars: int = 800) -> list[str]:
+def _chunk_text(text: str, max_chars: int = 400) -> list[str]:
     sentences = re.split(r"(?<=[.!?])\s+", text.strip())
     chunks, current = [], ""
     for sentence in sentences:
@@ -44,7 +44,7 @@ def collect_sources(queries: list[str], max_per_query: int = 3) -> list[dict]:
                 seen_urls.add(url)
                 raw = r.get("raw_content") or r.get("content") or ""
                 chunks = _chunk_text(raw)
-                for chunk in chunks[:4]:  # max 4 chunks per article
+                for chunk in chunks[:2]:  # max 2 chunks per article
                     sources.append({
                         "title": r.get("title", ""),
                         "url": url,

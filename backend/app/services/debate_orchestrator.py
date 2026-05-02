@@ -75,7 +75,7 @@ async def run_debate(debate_id: str, topic: str) -> AsyncGenerator[str, None]:
 
         # Step 3 — opening statements
         yield _sse("status", {"message": "PRO side: opening statement...", "step": 3, "total": 5})
-        pro_chunks = await _exec(loop, retrieve, debate_id, "pro", topic, 4)
+        pro_chunks = await _exec(loop, retrieve, debate_id, "pro", topic, 3)
         async for chunk in _await_with_pings(_exec(loop, generate_argument, topic, Side.pro, "opening", pro_chunks, None)):
             if isinstance(chunk, str):
                 yield chunk
@@ -89,7 +89,7 @@ async def run_debate(debate_id: str, topic: str) -> AsyncGenerator[str, None]:
         })
 
         yield _sse("status", {"message": "CON side: opening statement...", "step": 3, "total": 5})
-        con_chunks = await _exec(loop, retrieve, debate_id, "con", topic, 4)
+        con_chunks = await _exec(loop, retrieve, debate_id, "con", topic, 3)
         async for chunk in _await_with_pings(_exec(loop, generate_argument, topic, Side.con, "opening", con_chunks, None)):
             if isinstance(chunk, str):
                 yield chunk
@@ -104,7 +104,7 @@ async def run_debate(debate_id: str, topic: str) -> AsyncGenerator[str, None]:
 
         # Step 4 — rebuttals
         yield _sse("status", {"message": "PRO side: rebuttal...", "step": 4, "total": 5})
-        pro_rebuttal_chunks = await _exec(loop, retrieve, debate_id, "pro", con_opening.content, 4)
+        pro_rebuttal_chunks = await _exec(loop, retrieve, debate_id, "pro", con_opening.content, 3)
         async for chunk in _await_with_pings(_exec(loop, generate_argument, topic, Side.pro, "rebuttal", pro_rebuttal_chunks, [con_opening.content])):
             if isinstance(chunk, str):
                 yield chunk
@@ -118,7 +118,7 @@ async def run_debate(debate_id: str, topic: str) -> AsyncGenerator[str, None]:
         })
 
         yield _sse("status", {"message": "CON side: rebuttal...", "step": 4, "total": 5})
-        con_rebuttal_chunks = await _exec(loop, retrieve, debate_id, "con", pro_opening.content, 4)
+        con_rebuttal_chunks = await _exec(loop, retrieve, debate_id, "con", pro_opening.content, 3)
         async for chunk in _await_with_pings(_exec(loop, generate_argument, topic, Side.con, "rebuttal", con_rebuttal_chunks, [pro_opening.content])):
             if isinstance(chunk, str):
                 yield chunk

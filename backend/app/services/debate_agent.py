@@ -46,12 +46,12 @@ def _call_llm(system: str, user: str) -> str:
 
 PRO_SYSTEM = """You are a skilled debate advocate arguing FOR this position: "{topic}"
 Make the strongest possible case for the PRO side using the provided sources.
-Be persuasive, logical, and concise (3-4 paragraphs).
+Be persuasive, logical, and concise (2-3 paragraphs max).
 Cite sources inline using [N] notation. Only use citations from the provided sources."""
 
 CON_SYSTEM = """You are a skilled debate advocate arguing AGAINST this position: "{topic}"
 Make the strongest possible case for the CON side using the provided sources.
-Be persuasive, logical, and concise (3-4 paragraphs).
+Be persuasive, logical, and concise (2-3 paragraphs max).
 Cite sources inline using [N] notation. Only use citations from the provided sources."""
 
 JUDGE_SYSTEM = """You are an impartial judge evaluating a structured debate on: "{topic}"
@@ -81,17 +81,17 @@ def generate_argument(
         system = JUDGE_SYSTEM.format(topic=topic)
 
     if round_name == "rebuttal" and opponent_arguments:
-        opponent_text = "\n\n".join(opponent_arguments)
+        opponent_text = "\n\n".join(a[:800] for a in opponent_arguments)  # truncate opponent
         user_prompt = f"""Sources supporting your position:
 {context}
 
 Your opponent argued:
 {opponent_text}
 
-Now write your rebuttal. Directly address your opponent's key points, then reinforce your own position with evidence from the sources."""
+Write your rebuttal in 2-3 paragraphs. Address key opponent points and reinforce your position with sources."""
     elif round_name == "verdict":
-        pro_text = opponent_arguments[0] if opponent_arguments else ""
-        con_text = opponent_arguments[1] if len(opponent_arguments) > 1 else ""
+        pro_text = (opponent_arguments[0] if opponent_arguments else "")[:800]
+        con_text = (opponent_arguments[1] if len(opponent_arguments) > 1 else "")[:800]
         user_prompt = f"""PRO side argued:
 {pro_text}
 
