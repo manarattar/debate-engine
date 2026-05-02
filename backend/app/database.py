@@ -42,6 +42,14 @@ class HumanDebate(Base):
     error_message = Column(Text, nullable=True)
 
 
+class FactCheck(Base):
+    __tablename__ = "fact_checks"
+
+    debate_id = Column(String, primary_key=True)
+    result_json = Column(Text, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+
 def create_tables():
     Base.metadata.create_all(bind=engine)
 

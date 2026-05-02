@@ -3,6 +3,7 @@ import TopicInput from "./components/TopicInput";
 import DebateArena from "./components/DebateArena";
 import HumanDebatePage from "./components/HumanDebatePage";
 import HistoryPanel from "./components/HistoryPanel";
+import FactCheckPanel from "./components/FactCheckPanel";
 import { getDebate } from "./api";
 import "./index.css";
 
@@ -37,6 +38,7 @@ export default function App() {
   const [debateMode, setDebateMode] = useState("ai"); // "ai" | "human"
   const [phase, setPhase] = useState("idle");
   const [topic, setTopic] = useState("");
+  const [debateId, setDebateId] = useState(null);
   const [events, setEvents] = useState([]);       // completed arguments
   const [streaming, setStreaming] = useState(null); // {side, round_name, content} — in-progress
   const [status, setStatus] = useState(null);
@@ -82,6 +84,7 @@ export default function App() {
         } else if (msg.type === "winner") {
           setWinner(msg.data.winner);
         } else if (msg.type === "complete") {
+          setDebateId(msg.data?.debate_id || null);
           setPhase("complete");
           if (window._refreshDebateHistory) window._refreshDebateHistory();
         } else if (msg.type === "error") {
@@ -100,6 +103,7 @@ export default function App() {
       const data = await getDebate(item.debate_id);
       if (data.status === "processing") return;
       setTopic(data.topic);
+      setDebateId(item.debate_id);
       const allArgs = [
         ...(data.pro_arguments || []),
         ...(data.con_arguments || []),
@@ -120,6 +124,7 @@ export default function App() {
     setPhase("idle");
     setDebateMode("ai");
     setTopic("");
+    setDebateId(null);
     setEvents([]);
     setStreaming(null);
     setStatus(null);
@@ -200,6 +205,7 @@ export default function App() {
               winner={winner}
               isLive={false}
             />
+            {debateId && <FactCheckPanel debateId={debateId} />}
           </div>
         )}
 

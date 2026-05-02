@@ -68,3 +68,19 @@ class HumanDebateStatusResponse(BaseModel):
 
 class HumanArgumentRequest(BaseModel):
     content: str
+
+
+class FactCheckClaim(BaseModel):
+    claim: str
+    side: str                # "pro" | "con"
+    verdict: str             # "verified" | "contested" | "misleading" | "unverifiable"
+    confidence: str          # "High" | "Medium" | "Low"
+    evidence: str
+    sources: list[str]
+
+
+class FactCheckReport(BaseModel):
+    debate_id: str
+    topic: str
+    claims: list[FactCheckClaim]
+    checked_at: str

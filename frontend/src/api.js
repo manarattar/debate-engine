@@ -91,3 +91,10 @@ export function streamHumanOpening(sessionId, content) {
 export function streamHumanRebuttal(sessionId, content) {
   return _ssePost(`/human-debate/${sessionId}/rebuttal`, { content });
 }
+
+// ── Fact check ────────────────────────────────────────────────────────────
+
+export async function runFactCheck(debateId) {
+  const res = await api.post(`/factcheck/${debateId}`);
+  return res.data;
+}
