@@ -6,7 +6,7 @@ const WINNER_STYLES = {
   tie: { label: "TIE", color: "text-yellow-400", border: "border-yellow-500/40", glow: "shadow-yellow-900/50" },
 };
 
-export default function JudgeVerdict({ verdict, winner }) {
+export default function JudgeVerdict({ verdict, winner, streaming = false }) {
   const [showSources, setShowSources] = useState(false);
   const style = WINNER_STYLES[winner] || WINNER_STYLES.tie;
 
@@ -32,6 +32,7 @@ export default function JudgeVerdict({ verdict, winner }) {
 
       <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
         {verdict.content}
+        {streaming && <span className="animate-pulse text-yellow-400">▌</span>}
       </p>
 
       {showSources && verdict.citations?.length > 0 && (

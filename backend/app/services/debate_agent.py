@@ -1,3 +1,5 @@
+import asyncio
+import threading
 from openai import OpenAI
 from app.config import get_settings
 from app.schemas import Argument, Citation, Side
@@ -15,7 +17,6 @@ def _make_client() -> OpenAI:
 
 
 def _build_source_context(chunks: list[dict], start_index: int = 1) -> tuple[str, list[Citation]]:
-    """Format retrieved chunks as numbered context and return citations."""
     context_lines = []
     citations = []
     for i, chunk in enumerate(chunks):
@@ -30,49 +31,7 @@ def _build_source_context(chunks: list[dict], start_index: int = 1) -> tuple[str
     return "\n\n".join(context_lines), citations
 
 
-def _call_llm(system: str, user: str) -> str:
-    client = _make_client()
-    response = client.chat.completions.create(
-        model=settings.model_name,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
-        temperature=0.7,
-        max_tokens=600,
-    )
-    return response.choices[0].message.content.strip()
-
-
-PRO_SYSTEM = """You are a skilled debate advocate arguing FOR this position: "{topic}"
-Make the strongest possible case for the PRO side using the provided sources.
-Be persuasive, logical, and concise (2-3 paragraphs max).
-Cite sources inline using [N] notation. Only use citations from the provided sources."""
-
-CON_SYSTEM = """You are a skilled debate advocate arguing AGAINST this position: "{topic}"
-Make the strongest possible case for the CON side using the provided sources.
-Be persuasive, logical, and concise (2-3 paragraphs max).
-Cite sources inline using [N] notation. Only use citations from the provided sources."""
-
-JUDGE_SYSTEM = """You are an impartial judge evaluating a structured debate on: "{topic}"
-Analyze all arguments from both sides fairly. Identify the strongest and weakest points.
-Structure your verdict as:
-1. What the PRO side argued well
-2. What the CON side argued well
-3. Key weaknesses on each side
-4. Your verdict: which side made a more compelling overall case, and why (or declare a tie)
-End with a clear WINNER: PRO / CON / TIE line."""
-
-
-def generate_argument(
-    topic: str,
-    side: Side,
-    round_name: str,
-    chunks: list[dict],
-    opponent_arguments: list[str] = None,
-) -> Argument:
-    context, citations = _build_source_context(chunks)
-
+def _build_prompts(topic: str, side: Side, round_name: str, context: str, opponent_arguments: list[str] = None):
     if side == Side.pro:
         system = PRO_SYSTEM.format(topic=topic)
     elif side == Side.con:
@@ -81,7 +40,7 @@ def generate_argument(
         system = JUDGE_SYSTEM.format(topic=topic)
 
     if round_name == "rebuttal" and opponent_arguments:
-        opponent_text = "\n\n".join(a[:800] for a in opponent_arguments)  # truncate opponent
+        opponent_text = "\n\n".join(a[:800] for a in opponent_arguments)
         user_prompt = f"""Sources supporting your position:
 {context}
 
@@ -108,12 +67,82 @@ Deliver your impartial verdict."""
 
 Write your {round_name} argument on the topic: {topic}"""
 
-    content = _call_llm(system, user_prompt)
-    return Argument(side=side, round_name=round_name, content=content, citations=citations)
+    return system, user_prompt
+
+
+PRO_SYSTEM = """You are a skilled debate advocate arguing FOR this position: "{topic}"
+Make the strongest possible case for the PRO side using the provided sources.
+Be persuasive, logical, and concise (2-3 paragraphs max).
+Cite sources inline using [N] notation. Only use citations from the provided sources."""
+
+CON_SYSTEM = """You are a skilled debate advocate arguing AGAINST this position: "{topic}"
+Make the strongest possible case for the CON side using the provided sources.
+Be persuasive, logical, and concise (2-3 paragraphs max).
+Cite sources inline using [N] notation. Only use citations from the provided sources."""
+
+JUDGE_SYSTEM = """You are an impartial judge evaluating a structured debate on: "{topic}"
+Analyze all arguments from both sides fairly. Identify the strongest and weakest points.
+Structure your verdict as:
+1. What the PRO side argued well
+2. What the CON side argued well
+3. Key weaknesses on each side
+4. Your verdict: which side made a more compelling overall case, and why (or declare a tie)
+End with a clear WINNER: PRO / CON / TIE line."""
+
+
+async def generate_argument_streaming(
+    topic: str,
+    side: Side,
+    round_name: str,
+    chunks: list[dict],
+    opponent_arguments: list[str] = None,
+):
+    """Async generator: yields ("token", delta) then ("complete", Argument)."""
+    context, citations = _build_source_context(chunks)
+    system, user_prompt = _build_prompts(topic, side, round_name, context, opponent_arguments)
+
+    loop = asyncio.get_event_loop()
+    queue: asyncio.Queue = asyncio.Queue()
+
+    def _stream():
+        try:
+            client = _make_client()
+            response = client.chat.completions.create(
+                model=settings.model_name,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0.7,
+                max_tokens=500,
+                stream=True,
+            )
+            for chunk in response:
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    asyncio.run_coroutine_threadsafe(queue.put(("token", delta)), loop)
+            asyncio.run_coroutine_threadsafe(queue.put(("done", None)), loop)
+        except Exception as e:
+            asyncio.run_coroutine_threadsafe(queue.put(("error", str(e))), loop)
+
+    thread = threading.Thread(target=_stream, daemon=True)
+    thread.start()
+
+    full_content = ""
+    while True:
+        kind, data = await queue.get()
+        if kind == "token":
+            full_content += data
+            yield "token", data
+        elif kind == "done":
+            argument = Argument(side=side, round_name=round_name, content=full_content, citations=citations)
+            yield "complete", argument
+            break
+        elif kind == "error":
+            raise RuntimeError(data)
 
 
 def generate_search_queries(topic: str) -> dict:
-    """Ask LLM to generate targeted search queries for both sides."""
     client = _make_client()
     response = client.chat.completions.create(
         model=settings.model_name,
@@ -133,7 +162,6 @@ Make queries specific and likely to find strong evidence-backed arguments."""
         max_tokens=300,
     )
     text = response.choices[0].message.content.strip()
-    # strip markdown fences
     text = re.sub(r"```(?:json)?", "", text).strip().strip("`")
     try:
         return json.loads(text)

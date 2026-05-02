@@ -4,18 +4,21 @@ import StatusBar from "./StatusBar";
 
 const ROUNDS = ["opening", "rebuttal"];
 
-export default function DebateArena({ topic, events, status, verdict, winner, isLive }) {
+export default function DebateArena({ topic, events, streaming, status, verdict, winner, isLive }) {
   const proArgs = events.filter((e) => e.side === "pro");
   const conArgs = events.filter((e) => e.side === "con");
 
-  const roundsToShow = ROUNDS.filter((r) =>
-    [...proArgs, ...conArgs].some((a) => a.round_name === r)
-  );
+  // Include the streaming round in the rounds list
+  const activeRounds = new Set([
+    ...events.map((e) => e.round_name),
+    ...(streaming ? [streaming.round_name] : []),
+  ]);
+  const roundsToShow = ROUNDS.filter((r) => activeRounds.has(r));
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 pb-16">
       {/* Topic banner */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-8 pt-6">
         <div className="inline-block bg-slate-800 border border-slate-600 rounded-2xl px-6 py-3">
           <p className="text-slate-400 text-sm mb-1">Debating</p>
           <h2 className="text-white text-xl font-semibold">"{topic}"</h2>
@@ -24,21 +27,17 @@ export default function DebateArena({ topic, events, status, verdict, winner, is
 
       {/* Status bar */}
       {isLive && status && (
-        <StatusBar
-          message={status.message}
-          currentStep={status.step || 1}
-          totalSteps={status.total || 5}
-        />
+        <StatusBar message={status.message} currentStep={status.step || 1} totalSteps={status.total || 5} />
       )}
 
       {/* Source count badges */}
       {status?.pro_count !== undefined && (
         <div className="flex justify-center gap-4 mb-6">
           <span className="text-xs px-3 py-1 bg-emerald-900/30 border border-emerald-700/30 text-emerald-400 rounded-full">
-            ✓ {status.pro_count} PRO source chunks indexed
+            ✓ {status.pro_count} PRO source chunks
           </span>
           <span className="text-xs px-3 py-1 bg-red-900/30 border border-red-700/30 text-red-400 rounded-full">
-            ✗ {status.con_count} CON source chunks indexed
+            ✗ {status.con_count} CON source chunks
           </span>
         </div>
       )}
@@ -60,23 +59,30 @@ export default function DebateArena({ topic, events, status, verdict, winner, is
         {roundsToShow.map((round) => {
           const pro = proArgs.find((a) => a.round_name === round);
           const con = conArgs.find((a) => a.round_name === round);
+          const proStreaming = streaming?.side === "pro" && streaming?.round_name === round;
+          const conStreaming = streaming?.side === "con" && streaming?.round_name === round;
+
           return (
             <div key={round} className="grid grid-cols-2 gap-4 items-start">
               <div>
                 {pro ? (
                   <ArgumentCard {...pro} />
+                ) : proStreaming ? (
+                  <ArgumentCard side="pro" round_name={round} content={streaming.content} citations={[]} streaming={true} />
                 ) : (
-                  <div className="border border-emerald-900/30 rounded-xl p-5 h-20 flex items-center justify-center">
-                    <span className="animate-pulse text-emerald-700 text-sm">Writing...</span>
+                  <div className="border border-emerald-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
+                    <span className="text-emerald-900 text-xs">waiting...</span>
                   </div>
                 )}
               </div>
               <div>
                 {con ? (
                   <ArgumentCard {...con} />
+                ) : conStreaming ? (
+                  <ArgumentCard side="con" round_name={round} content={streaming.content} citations={[]} streaming={true} />
                 ) : (
-                  <div className="border border-red-900/30 rounded-xl p-5 h-20 flex items-center justify-center">
-                    <span className="animate-pulse text-red-700 text-sm">Writing...</span>
+                  <div className="border border-red-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
+                    <span className="text-red-900 text-xs">waiting...</span>
                   </div>
                 )}
               </div>
@@ -85,10 +91,18 @@ export default function DebateArena({ topic, events, status, verdict, winner, is
         })}
       </div>
 
-      {/* Judge verdict */}
-      {verdict && (
+      {/* Judge verdict streaming or complete */}
+      {(verdict || (streaming?.side === "judge")) && (
         <div className="mt-8">
-          <JudgeVerdict verdict={verdict} winner={winner} />
+          {streaming?.side === "judge" ? (
+            <JudgeVerdict
+              verdict={{ content: streaming.content, citations: [] }}
+              winner={null}
+              streaming={true}
+            />
+          ) : (
+            <JudgeVerdict verdict={verdict} winner={winner} streaming={false} />
+          )}
         </div>
       )}
     </div>
