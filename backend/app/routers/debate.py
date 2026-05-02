@@ -20,13 +20,17 @@ async def start_debate(request: DebateRequest, db: Session = Depends(get_db)):
     capture: dict = {}
 
     async def stream():
+        saved = False
         async for chunk in run_debate(debate_id, request.topic, capture):
+            # Save BEFORE yielding the complete chunk — client may disconnect right after
+            if not saved and "result" in capture:
+                db.query(Debate).filter(Debate.id == debate_id).update({
+                    "status": "complete",
+                    "result_json": json.dumps(capture["result"]),
+                })
+                db.commit()
+                saved = True
             yield chunk
-
-        db_debate.status = "complete"
-        if "result" in capture:
-            db_debate.result_json = json.dumps(capture["result"])
-        db.commit()
 
     return StreamingResponse(
         stream(),
