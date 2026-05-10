@@ -1,10 +1,12 @@
 import asyncio
+import json
+import re
 import threading
+
 from openai import OpenAI
+
 from app.config import get_settings
 from app.schemas import Argument, Citation, Side
-import re
-import json
 
 settings = get_settings()
 
@@ -16,22 +18,39 @@ def _make_client() -> OpenAI:
     )
 
 
-def _build_source_context(chunks: list[dict], start_index: int = 1) -> tuple[str, list[Citation]]:
+MAX_CONTEXT_CHARS = 1200
+
+
+def _build_source_context(
+    chunks: list[dict], start_index: int = 1
+) -> tuple[str, list[Citation]]:
     context_lines = []
     citations = []
+    total = 0
     for i, chunk in enumerate(chunks):
-        n = start_index + i
-        context_lines.append(f"[{n}] {chunk['title']}\n{chunk['excerpt']}")
-        citations.append(Citation(
-            index=n,
-            title=chunk["title"],
-            url=chunk["url"],
-            excerpt=chunk["excerpt"][:200],
-        ))
+        line = f"[{start_index + i}] {chunk['title']}\n{chunk['excerpt']}"
+        if total + len(line) > MAX_CONTEXT_CHARS:
+            break
+        total += len(line)
+        context_lines.append(line)
+        citations.append(
+            Citation(
+                index=start_index + i,
+                title=chunk["title"],
+                url=chunk["url"],
+                excerpt=chunk["excerpt"][:150],
+            )
+        )
     return "\n\n".join(context_lines), citations
 
 
-def _build_prompts(topic: str, side: Side, round_name: str, context: str, opponent_arguments: list[str] = None):
+def _build_prompts(
+    topic: str,
+    side: Side,
+    round_name: str,
+    context: str,
+    opponent_arguments: list[str] = None,
+):
     if side == Side.pro:
         system = PRO_SYSTEM.format(topic=topic)
     elif side == Side.con:
@@ -40,17 +59,17 @@ def _build_prompts(topic: str, side: Side, round_name: str, context: str, oppone
         system = JUDGE_SYSTEM.format(topic=topic)
 
     if round_name == "rebuttal" and opponent_arguments:
-        opponent_text = "\n\n".join(a[:800] for a in opponent_arguments)
+        opponent_text = "\n\n".join(a[:400] for a in opponent_arguments)
         user_prompt = f"""Sources supporting your position:
 {context}
 
 Your opponent argued:
 {opponent_text}
 
-Write your rebuttal in 2-3 paragraphs. Address key opponent points and reinforce your position with sources."""
+Write your rebuttal in 2 paragraphs. Address the key opponent points using your sources."""
     elif round_name == "verdict":
-        pro_text = (opponent_arguments[0] if opponent_arguments else "")[:800]
-        con_text = (opponent_arguments[1] if len(opponent_arguments) > 1 else "")[:800]
+        pro_text = (opponent_arguments[0] if opponent_arguments else "")[:400]
+        con_text = (opponent_arguments[1] if len(opponent_arguments) > 1 else "")[:400]
         user_prompt = f"""PRO side argued:
 {pro_text}
 
@@ -103,9 +122,11 @@ async def generate_argument_streaming(
 ):
     """Async generator: yields ("token", delta) then ("complete", Argument)."""
     context, citations = _build_source_context(chunks)
-    system, user_prompt = _build_prompts(topic, side, round_name, context, opponent_arguments)
+    system, user_prompt = _build_prompts(
+        topic, side, round_name, context, opponent_arguments
+    )
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     queue: asyncio.Queue = asyncio.Queue()
 
     def _stream():
@@ -118,7 +139,7 @@ async def generate_argument_streaming(
                     {"role": "user", "content": user_prompt},
                 ],
                 temperature=0.7,
-                max_tokens=500,
+                max_tokens=350,
                 stream=True,
             )
             for chunk in response:
@@ -140,7 +161,12 @@ async def generate_argument_streaming(
             yield "token", data
             await asyncio.sleep(0.02)
         elif kind == "done":
-            argument = Argument(side=side, round_name=round_name, content=full_content, citations=citations)
+            argument = Argument(
+                side=side,
+                round_name=round_name,
+                content=full_content,
+                citations=citations,
+            )
             yield "complete", argument
             break
         elif kind == "error":
@@ -148,12 +174,14 @@ async def generate_argument_streaming(
 
 
 def generate_search_queries(topic: str) -> dict:
+    """Return LLM-generated {"pro_queries": [...], "con_queries": [...]} for a debate topic."""
     client = _make_client()
     response = client.chat.completions.create(
         model=settings.model_name,
-        messages=[{
-            "role": "user",
-            "content": f"""Generate search queries to find strong arguments for a debate on: "{topic}"
+        messages=[
+            {
+                "role": "user",
+                "content": f"""Generate search queries to find strong arguments for a debate on: "{topic}"
 
 Return ONLY valid JSON with this structure:
 {{
@@ -161,8 +189,9 @@ Return ONLY valid JSON with this structure:
   "con_queries": ["query1", "query2", "query3"]
 }}
 
-Make queries specific and likely to find strong evidence-backed arguments."""
-        }],
+Make queries specific and likely to find strong evidence-backed arguments.""",
+            }
+        ],
         temperature=0.3,
         max_tokens=300,
     )
@@ -172,12 +201,21 @@ Make queries specific and likely to find strong evidence-backed arguments."""
         return json.loads(text)
     except Exception:
         return {
-            "pro_queries": [f"arguments for {topic}", f"benefits of {topic}", f"evidence supporting {topic}"],
-            "con_queries": [f"arguments against {topic}", f"problems with {topic}", f"evidence against {topic}"],
+            "pro_queries": [
+                f"arguments for {topic}",
+                f"benefits of {topic}",
+                f"evidence supporting {topic}",
+            ],
+            "con_queries": [
+                f"arguments against {topic}",
+                f"problems with {topic}",
+                f"evidence against {topic}",
+            ],
         }
 
 
 def extract_winner(verdict_content: str) -> str:
+    """Parse judge verdict text; returns 'pro', 'con', or 'tie' (fallback)."""
     text = verdict_content.upper().strip()
 
     # Check the last 100 characters first — winner line is always at the end
@@ -195,7 +233,9 @@ def extract_winner(verdict_content: str) -> str:
         return "pro"
     if re.search(r"\b(CON WINS|CON SIDE WINS|CON MADE THE STRONGER|SIDE CON)\b", text):
         return "con"
-    if re.search(r"\b(THIS IS A TIE|DECLARE A TIE|RESULT IS A TIE|CALL THIS A TIE)\b", text):
+    if re.search(
+        r"\b(THIS IS A TIE|DECLARE A TIE|RESULT IS A TIE|CALL THIS A TIE)\b", text
+    ):
         return "tie"
 
     return "tie"

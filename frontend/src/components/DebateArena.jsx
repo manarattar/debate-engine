@@ -42,9 +42,9 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
         </div>
       )}
 
-      {/* Column headers */}
+      {/* Column headers — hidden on mobile since cards are stacked */}
       {roundsToShow.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="hidden md:grid grid-cols-2 gap-4 mb-4">
           <div className="text-center">
             <span className="text-emerald-400 font-bold text-sm uppercase tracking-widest">⬆ PRO</span>
           </div>
@@ -63,7 +63,7 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
           const conStreaming = streaming?.side === "con" && streaming?.round_name === round;
 
           return (
-            <div key={round} className="grid grid-cols-2 gap-4 items-start">
+            <div key={round} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
               <div>
                 {pro ? (
                   <ArgumentCard {...pro} />

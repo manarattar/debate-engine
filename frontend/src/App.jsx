@@ -37,6 +37,7 @@ async function* streamDebateFetch(topic) {
 export default function App() {
   const [debateMode, setDebateMode] = useState("ai"); // "ai" | "human"
   const [phase, setPhase] = useState("idle");
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [topic, setTopic] = useState("");
   const [debateId, setDebateId] = useState(null);
   const [events, setEvents] = useState([]);       // completed arguments
@@ -135,9 +136,24 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex">
-      <HistoryPanel onSelect={handleHistorySelect} currentTopic={topic} />
+      <HistoryPanel
+        onSelect={handleHistorySelect}
+        currentTopic={topic}
+        isOpen={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+      />
 
       <div className="flex-1 flex flex-col">
+        {/* Mobile top bar — hamburger + title */}
+        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-slate-800">
+          <button
+            onClick={() => setHistoryOpen(true)}
+            className="text-slate-400 hover:text-white text-xl leading-none"
+          >
+            ☰
+          </button>
+          <span className="text-slate-500 text-sm font-medium">Debate Engine</span>
+        </div>
         {phase === "idle" && (
           <div className="flex flex-col items-center">
             {/* Mode toggle */}

@@ -1,0 +1,6 @@
+[flake8]
+max-line-length = 100
+per-file-ignores =
+    # LLM prompt strings legitimately exceed 100 chars
+    app/services/fact_checker.py: E501
+    app/services/debate_agent.py: E501

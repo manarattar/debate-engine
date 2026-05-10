@@ -272,8 +272,8 @@ export default function HumanDebatePage({ topic, onReset }) {
         <StatusBar message={statusMsg.message} currentStep={statusMsg.step || 5} totalSteps={statusMsg.total || 5} />
       )}
 
-      {/* Column headers */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      {/* Column headers — hidden on mobile since cards stack vertically */}
+      <div className="hidden md:grid grid-cols-2 gap-4 mb-4">
         <ColHeader side="pro" isHuman={humanSide === "pro"} />
         <ColHeader side="con" isHuman={humanSide === "con"} />
       </div>
@@ -321,7 +321,7 @@ export default function HumanDebatePage({ topic, onReset }) {
           );
 
           return (
-            <div key={round} className="grid grid-cols-2 gap-4 items-start">
+            <div key={round} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
               {humanSide === "pro" ? <>{humanCol}{aiCol}</> : <>{aiCol}{humanCol}</>}
             </div>
           );
@@ -329,7 +329,7 @@ export default function HumanDebatePage({ topic, onReset }) {
 
         {/* Opening input shown before any rounds appear */}
         {rounds.length === 0 && phase === "your_opening" && (
-          <div className="grid grid-cols-2 gap-4 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             {humanSide === "pro" ? (
               <>
                 <ArgumentInput

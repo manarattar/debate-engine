@@ -8,7 +8,7 @@ const WINNER_BADGE = {
   unknown: "bg-slate-700 text-slate-400 border-slate-600",
 };
 
-export default function HistoryPanel({ onSelect, currentTopic }) {
+export default function HistoryPanel({ onSelect, currentTopic, isOpen, onClose }) {
   const [history, setHistory] = useState([]);
 
   const load = async () => {
@@ -24,18 +24,15 @@ export default function HistoryPanel({ onSelect, currentTopic }) {
     return () => { delete window._refreshDebateHistory; };
   }, []);
 
-  if (history.length === 0) return null;
-
-  return (
-    <div className="w-64 shrink-0 border-r border-slate-800 flex flex-col">
-      <div className="p-4 border-b border-slate-800">
-        <h3 className="text-slate-400 text-xs font-semibold uppercase tracking-widest">Past Debates</h3>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        {history.map((d) => (
+  const items = (
+    <div className="flex-1 overflow-y-auto">
+      {history.length === 0 ? (
+        <p className="text-slate-600 text-xs text-center p-6">No debates yet</p>
+      ) : (
+        history.map((d) => (
           <button
             key={d.debate_id}
-            onClick={() => onSelect(d)}
+            onClick={() => { onSelect(d); onClose?.(); }}
             className={`w-full text-left px-4 py-3 border-b border-slate-800/50 hover:bg-slate-800/40 transition-colors ${
               currentTopic === d.topic ? "bg-slate-800/60" : ""
             }`}
@@ -45,8 +42,43 @@ export default function HistoryPanel({ onSelect, currentTopic }) {
               {d.winner?.toUpperCase() || "?"}
             </span>
           </button>
-        ))}
-      </div>
+        ))
+      )}
     </div>
+  );
+
+  const header = (
+    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+      <h3 className="text-slate-400 text-xs font-semibold uppercase tracking-widest">Past Debates</h3>
+      <button
+        onClick={onClose}
+        className="md:hidden text-slate-500 hover:text-slate-300 text-lg leading-none"
+      >
+        ✕
+      </button>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar — always visible on md+, hidden on mobile */}
+      {history.length > 0 && (
+        <div className="hidden md:flex w-64 shrink-0 border-r border-slate-800 flex-col">
+          {header}
+          {items}
+        </div>
+      )}
+
+      {/* Mobile drawer overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div className="w-64 bg-[#0a0a0f] border-r border-slate-800 flex flex-col">
+            {header}
+            {items}
+          </div>
+          <div className="flex-1 bg-black/60" onClick={onClose} />
+        </div>
+      )}
+    </>
   );
 }

@@ -1,10 +1,11 @@
 import json
 import re
 from datetime import datetime, timezone
-from tavily import TavilyClient
-from openai import OpenAI
+
 from app.config import get_settings
 from app.schemas import FactCheckClaim, FactCheckReport
+from openai import OpenAI
+from tavily import TavilyClient
 
 settings = get_settings()
 
@@ -83,7 +84,11 @@ def _search_claim(claim: str) -> tuple[str, list[str]]:
 
 def _assess_claim(claim: str, side: str, search_text: str) -> dict:
     if not search_text.strip():
-        return {"verdict": "unverifiable", "confidence": "Low", "evidence": "No relevant sources found."}
+        return {
+            "verdict": "unverifiable",
+            "confidence": "Low",
+            "evidence": "No relevant sources found.",
+        }
 
     prompt = f"""Claim: "{claim}"
 Made by: {side} side
@@ -107,28 +112,36 @@ Assess the claim. Return ONLY valid JSON:
     try:
         return _parse_json(resp.choices[0].message.content)
     except Exception:
-        return {"verdict": "unverifiable", "confidence": "Low", "evidence": "Could not assess claim."}
+        return {
+            "verdict": "unverifiable",
+            "confidence": "Low",
+            "evidence": "Could not assess claim.",
+        }
 
 
-def run_fact_check(debate_id: str, topic: str, pro_content: str, con_content: str) -> FactCheckReport:
+def run_fact_check(
+    debate_id: str, topic: str, pro_content: str, con_content: str
+) -> FactCheckReport:
     raw_claims = _extract_claims(topic, pro_content, con_content)
 
     results: list[FactCheckClaim] = []
     for c in raw_claims:
         claim_text = c.get("claim", "")
-        side = c.get("side", "pro")
+        side = c.get("side") if c.get("side") in ("pro", "con") else "pro"
         if not claim_text:
             continue
         search_text, sources = _search_claim(claim_text)
         assessment = _assess_claim(claim_text, side, search_text)
-        results.append(FactCheckClaim(
-            claim=claim_text,
-            side=side,
-            verdict=assessment.get("verdict", "unverifiable"),
-            confidence=assessment.get("confidence", "Low"),
-            evidence=assessment.get("evidence", ""),
-            sources=sources[:2],
-        ))
+        results.append(
+            FactCheckClaim(
+                claim=claim_text,
+                side=side,
+                verdict=assessment.get("verdict", "unverifiable"),
+                confidence=assessment.get("confidence", "Low"),
+                evidence=assessment.get("evidence", ""),
+                sources=sources[:2],
+            )
+        )
 
     return FactCheckReport(
         debate_id=debate_id,

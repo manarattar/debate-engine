@@ -1,18 +1,16 @@
 import uuid
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.database import get_db, HumanDebate
-from app.schemas import (
-    HumanDebateStartRequest, HumanDebateStartResponse,
-    HumanDebateStatusResponse, HumanArgumentRequest, Side,
-)
-from app.services.human_debate_service import (
-    gather_sources_background,
-    stream_ai_opening,
-    stream_ai_rebuttal_and_verdict,
-)
+from app.database import HumanDebate, get_db
+from app.schemas import (HumanArgumentRequest, HumanDebateStartRequest,
+                         HumanDebateStartResponse, HumanDebateStatusResponse,
+                         Side)
+from app.services.human_debate_service import (gather_sources_background,
+                                               stream_ai_opening,
+                                               stream_ai_rebuttal_and_verdict)
 
 router = APIRouter()
 
@@ -29,6 +27,7 @@ def start_human_debate(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
+    """Create a new human-vs-AI debate session and kick off source gathering in the background."""
     if request.human_side not in ("pro", "con"):
         raise HTTPException(400, "human_side must be 'pro' or 'con'")
 
@@ -42,14 +41,16 @@ def start_human_debate(
     db.add(row)
     db.commit()
 
-    new_db = next(get_db())
-    background_tasks.add_task(gather_sources_background, session_id, request.topic, new_db)
+    background_tasks.add_task(gather_sources_background, session_id, request.topic)
 
     return HumanDebateStartResponse(session_id=session_id, status="gathering_sources")
 
 
-@router.get("/human-debate/{session_id}/status", response_model=HumanDebateStatusResponse)
+@router.get(
+    "/human-debate/{session_id}/status", response_model=HumanDebateStatusResponse
+)
 def get_human_debate_status(session_id: str, db: Session = Depends(get_db)):
+    """Poll the status of a human debate session (gathering_sources → sources_ready → complete)."""
     row = db.query(HumanDebate).filter(HumanDebate.id == session_id).first()
     if not row:
         raise HTTPException(404, "Session not found")
@@ -66,6 +67,7 @@ async def submit_opening(
     request: HumanArgumentRequest,
     db: Session = Depends(get_db),
 ):
+    """Accept the human's opening argument and stream the AI's opening response as SSE."""
     row = db.query(HumanDebate).filter(HumanDebate.id == session_id).first()
     if not row:
         raise HTTPException(404, "Session not found")
@@ -83,7 +85,9 @@ async def submit_opening(
         async for chunk in stream_ai_opening(session_id, topic, ai_side, db):
             yield chunk
 
-    return StreamingResponse(stream(), media_type="text/event-stream", headers=SSE_HEADERS)
+    return StreamingResponse(
+        stream(), media_type="text/event-stream", headers=SSE_HEADERS
+    )
 
 
 @router.post("/human-debate/{session_id}/rebuttal")
@@ -92,6 +96,7 @@ async def submit_rebuttal(
     request: HumanArgumentRequest,
     db: Session = Depends(get_db),
 ):
+    """Accept the human's rebuttal, stream the AI rebuttal, then stream the judge verdict."""
     row = db.query(HumanDebate).filter(HumanDebate.id == session_id).first()
     if not row:
         raise HTTPException(404, "Session not found")
@@ -109,9 +114,16 @@ async def submit_rebuttal(
 
     async def stream():
         async for chunk in stream_ai_rebuttal_and_verdict(
-            session_id, topic, ai_side,
-            human_opening, ai_opening, request.content, db,
+            session_id,
+            topic,
+            ai_side,
+            human_opening,
+            ai_opening,
+            request.content,
+            db,
         ):
             yield chunk
 
-    return StreamingResponse(stream(), media_type="text/event-stream", headers=SSE_HEADERS)
+    return StreamingResponse(
+        stream(), media_type="text/event-stream", headers=SSE_HEADERS
+    )

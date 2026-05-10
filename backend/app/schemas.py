@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
 from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel, field_validator
 
 
 class Side(str, Enum):
@@ -25,6 +26,16 @@ class Argument(BaseModel):
 
 class DebateRequest(BaseModel):
     topic: str
+
+    @field_validator("topic")
+    @classmethod
+    def topic_must_be_valid(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Topic cannot be empty")
+        if len(v) > 300:
+            raise ValueError("Topic must be 300 characters or fewer")
+        return v
 
 
 class DebateResult(BaseModel):
@@ -69,12 +80,22 @@ class HumanDebateStatusResponse(BaseModel):
 class HumanArgumentRequest(BaseModel):
     content: str
 
+    @field_validator("content")
+    @classmethod
+    def content_must_be_valid(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Argument cannot be empty")
+        if len(v) > 1200:
+            raise ValueError("Argument must be 1200 characters or fewer")
+        return v
+
 
 class FactCheckClaim(BaseModel):
     claim: str
-    side: str                # "pro" | "con"
-    verdict: str             # "verified" | "contested" | "misleading" | "unverifiable"
-    confidence: str          # "High" | "Medium" | "Low"
+    side: str  # "pro" | "con"
+    verdict: str  # "verified" | "contested" | "misleading" | "unverifiable"
+    confidence: str  # "High" | "Medium" | "Low"
     evidence: str
     sources: list[str]
 
