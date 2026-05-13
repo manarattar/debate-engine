@@ -3,10 +3,9 @@ import json
 import re
 import threading
 
-from openai import OpenAI
-
 from app.config import get_settings
 from app.schemas import Argument, Citation, Side
+from openai import OpenAI
 
 settings = get_settings()
 
@@ -129,6 +128,8 @@ async def generate_argument_streaming(
     loop = asyncio.get_running_loop()
     queue: asyncio.Queue = asyncio.Queue()
 
+    token_limit = 900 if round_name == "verdict" else 350
+
     def _stream():
         try:
             client = _make_client()
@@ -139,7 +140,7 @@ async def generate_argument_streaming(
                     {"role": "user", "content": user_prompt},
                 ],
                 temperature=0.7,
-                max_tokens=350,
+                max_tokens=token_limit,
                 stream=True,
             )
             for chunk in response:
