@@ -182,28 +182,30 @@ export default function App() {
         )}
 
         {phase === "debating" && (
-          <div className="flex flex-col flex-1">
-            <div className="flex justify-between items-center px-6 py-3 border-b border-slate-800">
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex justify-between items-center px-6 py-3 border-b border-slate-800 shrink-0">
               <span className="text-slate-400 text-sm">Debate in progress...</span>
               <button onClick={handleReset} className="text-slate-500 hover:text-slate-300 text-sm transition-colors">
                 ✕ Cancel
               </button>
             </div>
-            <DebateArena
-              topic={topic}
-              events={events}
-              streaming={streaming}
-              status={status}
-              verdict={verdict}
-              winner={winner}
-              isLive={true}
-            />
+            <div className="flex-1 overflow-y-auto min-h-0">
+              <DebateArena
+                topic={topic}
+                events={events}
+                streaming={streaming}
+                status={status}
+                verdict={verdict}
+                winner={winner}
+                isLive={true}
+              />
+            </div>
           </div>
         )}
 
         {phase === "complete" && (
-          <div className="flex flex-col flex-1">
-            <div className="flex justify-between items-center px-6 py-3 border-b border-slate-800">
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex justify-between items-center px-6 py-3 border-b border-slate-800 shrink-0">
               <span className="text-slate-400 text-sm">Debate complete</span>
               <button
                 onClick={handleReset}
@@ -212,16 +214,18 @@ export default function App() {
                 + New Debate
               </button>
             </div>
-            <DebateArena
-              topic={topic}
-              events={events}
-              streaming={null}
-              status={null}
-              verdict={verdict}
-              winner={winner}
-              isLive={false}
-            />
-            {debateId && <FactCheckPanel debateId={debateId} />}
+            <div className="flex-1 overflow-y-auto min-h-0">
+              <DebateArena
+                topic={topic}
+                events={events}
+                streaming={null}
+                status={null}
+                verdict={verdict}
+                winner={winner}
+                isLive={false}
+              />
+              {debateId && <FactCheckPanel debateId={debateId} />}
+            </div>
           </div>
         )}
 
