@@ -1,10 +1,14 @@
-from sqlalchemy import create_engine, Column, String, Integer, Text, DateTime, func
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
 import os
+
+from sqlalchemy import (Column, DateTime, Integer, String, Text, create_engine,
+                        func)
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 os.makedirs("./data", exist_ok=True)
 
-engine = create_engine("sqlite:///./data/debates.db", connect_args={"check_same_thread": False})
+engine = create_engine(
+    "sqlite:///./data/debates.db", connect_args={"check_same_thread": False}
+)
 SessionLocal = sessionmaker(bind=engine)
 
 
@@ -47,6 +51,17 @@ class FactCheck(Base):
 
     debate_id = Column(String, primary_key=True)
     result_json = Column(Text, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class Vote(Base):
+    __tablename__ = "votes"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    debate_id = Column(String, nullable=False, index=True)
+    phase = Column(String, nullable=False)  # "before" | "after"
+    side = Column(String, nullable=False)  # "pro" | "con"
+    session_id = Column(String, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
 
 

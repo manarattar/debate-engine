@@ -2,9 +2,9 @@ import ArgumentCard from "./ArgumentCard";
 import JudgeVerdict from "./JudgeVerdict";
 import StatusBar from "./StatusBar";
 
-const ROUNDS = ["opening", "rebuttal"];
+const ROUNDS = ["opening", "rebuttal", "closing"];
 
-export default function DebateArena({ topic, events, streaming, status, verdict, winner, isLive }) {
+export default function DebateArena({ topic, events, streaming, status, verdict, winner, isLive, proPersona, conPersona }) {
   const proArgs = events.filter((e) => e.side === "pro");
   const conArgs = events.filter((e) => e.side === "con");
 
@@ -47,9 +47,19 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
         <div className="hidden md:grid grid-cols-2 gap-4 mb-4">
           <div className="text-center">
             <span className="text-emerald-400 font-bold text-sm uppercase tracking-widest">⬆ PRO</span>
+            {proPersona && (
+              <span className="ml-2 text-xs px-2 py-0.5 bg-emerald-900/40 border border-emerald-700/40 text-emerald-300 rounded-full">
+                {proPersona}
+              </span>
+            )}
           </div>
           <div className="text-center">
             <span className="text-red-400 font-bold text-sm uppercase tracking-widest">CON ⬇</span>
+            {conPersona && (
+              <span className="ml-2 text-xs px-2 py-0.5 bg-red-900/40 border border-red-700/40 text-red-300 rounded-full">
+                {conPersona}
+              </span>
+            )}
           </div>
         </div>
       )}

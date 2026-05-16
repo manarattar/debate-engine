@@ -1,4 +1,5 @@
-from app.services.debate_agent import (MAX_CONTEXT_CHARS,
+from app.schemas import Side
+from app.services.debate_agent import (MAX_CONTEXT_CHARS, _build_prompts,
                                        _build_source_context, extract_winner)
 
 # ── extract_winner ─────────────────────────────────────────────────────────
@@ -125,3 +126,47 @@ class TestBuildSourceContext:
         chunks = [_make_chunk(title=f"T{i}") for i in range(3)]
         _, citations = _build_source_context(chunks, start_index=2)
         assert [c.index for c in citations] == [2, 3, 4]
+
+
+# ── _build_prompts (closing round) ───────────────────────────────────────────
+
+
+class TestBuildPromptsClosing:
+    def test_pro_closing_uses_pro_closing_system(self):
+        system, _ = _build_prompts(
+            "AI ethics", Side.pro, "closing", "", ["Con argued X."]
+        )
+        assert "closing statement FOR" in system
+        assert "AI ethics" in system
+
+    def test_con_closing_uses_con_closing_system(self):
+        system, _ = _build_prompts(
+            "AI ethics", Side.con, "closing", "", ["Pro argued X."]
+        )
+        assert "closing statement AGAINST" in system
+        assert "AI ethics" in system
+
+    def test_closing_prompt_includes_opponent_arguments(self):
+        _, user_prompt = _build_prompts(
+            "Nuclear energy", Side.pro, "closing", "", ["Con argued it is dangerous."]
+        )
+        assert "Con argued it is dangerous." in user_prompt
+
+    def test_closing_prompt_without_opponent_falls_back(self):
+        _, user_prompt = _build_prompts("Nuclear energy", Side.pro, "closing", "", None)
+        assert isinstance(user_prompt, str)
+        assert len(user_prompt) > 0
+
+    def test_closing_does_not_use_generic_opening_system(self):
+        system, _ = _build_prompts("AI ethics", Side.pro, "closing", "", [])
+        assert "arguing FOR" not in system
+
+    def test_opening_round_still_uses_pro_system(self):
+        system, _ = _build_prompts("AI ethics", Side.pro, "opening", "context", None)
+        assert "arguing FOR" in system
+
+    def test_rebuttal_round_still_uses_pro_system(self):
+        system, _ = _build_prompts(
+            "AI ethics", Side.pro, "rebuttal", "ctx", ["opp arg"]
+        )
+        assert "arguing FOR" in system

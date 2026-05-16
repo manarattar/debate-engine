@@ -1,19 +1,51 @@
 import { useState } from "react";
+import PersonaPicker from "./PersonaPicker";
 
-const EXAMPLES = [
-  "AI will replace software engineers",
-  "Remote work is better than office work",
-  "Social media does more harm than good",
-  "Universal Basic Income should be implemented",
-  "Nuclear energy is the best solution to climate change",
+const TOPIC_CATEGORIES = [
+  {
+    label: "🤖 Technology",
+    topics: [
+      "AI will replace software engineers",
+      "Social media does more harm than good",
+      "Cryptocurrency is the future of money",
+    ],
+  },
+  {
+    label: "🌍 Society",
+    topics: [
+      "Universal Basic Income should be implemented",
+      "Remote work is better than office work",
+      "Smartphones have made us less intelligent",
+    ],
+  },
+  {
+    label: "⚡ Energy & Climate",
+    topics: [
+      "Nuclear energy is the best solution to climate change",
+      "Electric vehicles will save the planet",
+      "Carbon taxes are the most effective climate policy",
+    ],
+  },
+  {
+    label: "🏛 Policy",
+    topics: [
+      "The death penalty should be abolished worldwide",
+      "Open borders would benefit the global economy",
+      "Affirmative action does more harm than good",
+    ],
+  },
 ];
 
 export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
   const [topic, setTopic] = useState("");
+  const [personas, setPersonas] = useState({ pro: "", con: "" });
+  const [showPersonas, setShowPersonas] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (topic.trim() && !isLoading) onSubmit(topic.trim());
+    if (topic.trim() && !isLoading) {
+      onSubmit(topic.trim(), personas.pro.trim() || null, personas.con.trim() || null);
+    }
   };
 
   return (
@@ -39,12 +71,16 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
           placeholder="Enter a debate topic..."
           disabled={isLoading}
           rows={3}
-          className="w-full bg-slate-800 border border-slate-600 rounded-xl px-5 py-4 text-white placeholder-slate-500 text-lg resize-none focus:outline-none focus:border-violet-500 disabled:opacity-50 transition-colors"
+          className="w-full bg-slate-800 border border-slate-600 rounded-xl px-5 py-4 text-white
+            placeholder-slate-500 text-lg resize-none focus:outline-none focus:border-violet-500
+            disabled:opacity-50 transition-colors"
         />
         <button
           type="submit"
           disabled={!topic.trim() || isLoading}
-          className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-4 rounded-xl text-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-slate-700
+            disabled:text-slate-500 text-white font-semibold py-4 rounded-xl text-lg
+            transition-colors flex items-center justify-center gap-2"
         >
           {isLoading ? (
             <><span className="animate-spin">⟳</span> Running debate...</>
@@ -54,20 +90,42 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
         </button>
       </form>
 
-      <div className="w-full max-w-2xl">
-        <p className="text-slate-500 text-sm mb-3 text-center">Try an example:</p>
-        <div className="flex flex-wrap gap-2 justify-center">
-          {EXAMPLES.map((ex) => (
-            <button
-              key={ex}
-              onClick={() => setTopic(ex)}
-              disabled={isLoading}
-              className="text-sm px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full text-slate-300 transition-colors disabled:opacity-40"
-            >
-              {ex}
-            </button>
-          ))}
-        </div>
+      {/* Persona toggle */}
+      <button
+        onClick={() => setShowPersonas((v) => !v)}
+        className="text-sm text-slate-500 hover:text-violet-400 transition-colors"
+      >
+        🎭 {showPersonas ? "Hide personas" : "Add debate personas (optional)"}
+      </button>
+
+      {showPersonas && (
+        <PersonaPicker
+          proPersona={personas.pro}
+          conPersona={personas.con}
+          onChange={setPersonas}
+        />
+      )}
+
+      {/* Topic categories */}
+      <div className="w-full max-w-2xl flex flex-col gap-4">
+        {TOPIC_CATEGORIES.map((cat) => (
+          <div key={cat.label}>
+            <p className="text-slate-500 text-xs mb-2 uppercase tracking-wide">{cat.label}</p>
+            <div className="flex flex-wrap gap-2">
+              {cat.topics.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTopic(t)}
+                  disabled={isLoading}
+                  className="text-sm px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border
+                    border-slate-600 rounded-full text-slate-300 transition-colors disabled:opacity-40"
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

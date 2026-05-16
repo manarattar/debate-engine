@@ -1,9 +1,10 @@
+import os
+
+from app.config import get_settings
+from app.database import create_tables
+from app.routers import debate, factcheck, human_debate, vote
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import create_tables
-from app.routers import debate, human_debate, factcheck
-from app.config import get_settings
-import os
 
 app = FastAPI(title="Debate Engine API")
 
@@ -19,6 +20,7 @@ app.add_middleware(
 app.include_router(debate.router, prefix="/api")
 app.include_router(human_debate.router, prefix="/api")
 app.include_router(factcheck.router, prefix="/api")
+app.include_router(vote.router, prefix="/api")
 
 
 @app.on_event("startup")

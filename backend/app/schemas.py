@@ -26,6 +26,9 @@ class Argument(BaseModel):
 
 class DebateRequest(BaseModel):
     topic: str
+    debate_id: Optional[str] = None
+    pro_persona: Optional[str] = None
+    con_persona: Optional[str] = None
 
     @field_validator("topic")
     @classmethod
@@ -89,6 +92,39 @@ class HumanArgumentRequest(BaseModel):
         if len(v) > 1200:
             raise ValueError("Argument must be 1200 characters or fewer")
         return v
+
+
+class VoteRequest(BaseModel):
+    debate_id: str
+    phase: str  # "before" | "after"
+    side: str  # "pro" | "con"
+    session_id: str
+
+    @field_validator("phase")
+    @classmethod
+    def phase_must_be_valid(cls, v: str) -> str:
+        if v not in ("before", "after"):
+            raise ValueError("phase must be 'before' or 'after'")
+        return v
+
+    @field_validator("side")
+    @classmethod
+    def side_must_be_valid(cls, v: str) -> str:
+        if v not in ("pro", "con"):
+            raise ValueError("side must be 'pro' or 'con'")
+        return v
+
+
+class VoteTally(BaseModel):
+    pro: int
+    con: int
+    total: int
+
+
+class VoteResult(BaseModel):
+    debate_id: str
+    before: VoteTally
+    after: VoteTally
 
 
 class FactCheckClaim(BaseModel):

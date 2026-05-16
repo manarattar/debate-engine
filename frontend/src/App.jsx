@@ -1,18 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TopicInput from "./components/TopicInput";
 import DebateArena from "./components/DebateArena";
 import HumanDebatePage from "./components/HumanDebatePage";
 import HistoryPanel from "./components/HistoryPanel";
 import FactCheckPanel from "./components/FactCheckPanel";
+import VotePanel from "./components/VotePanel";
 import { getDebate } from "./api";
 import "./index.css";
 
-async function* streamDebateFetch(topic) {
+function generateDebateId() {
+  return crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+}
+
+async function* streamDebateFetch(topic, debateId, proPersona, conPersona) {
   const base = import.meta.env.VITE_API_URL || "";
   const res = await fetch(`${base}/api/debate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ topic }),
+    body: JSON.stringify({
+      topic,
+      debate_id: debateId,
+      pro_persona: proPersona || null,
+      con_persona: conPersona || null,
+    }),
   });
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
@@ -40,14 +50,49 @@ export default function App() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [topic, setTopic] = useState("");
   const [debateId, setDebateId] = useState(null);
+  const [pendingVoteTopic, setPendingVoteTopic] = useState(null);
+  const [proPersona, setProPersona] = useState(null);
+  const [conPersona, setConPersona] = useState(null);
   const [events, setEvents] = useState([]);       // completed arguments
   const [streaming, setStreaming] = useState(null); // {side, round_name, content} — in-progress
   const [status, setStatus] = useState(null);
   const [verdict, setVerdict] = useState(null);
   const [winner, setWinner] = useState(null);
   const [error, setError] = useState(null);
+  const [copied, setCopied] = useState(false);
 
-  const handleSubmit = async (newTopic) => {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sharedId = params.get("debate");
+    if (sharedId) {
+      getDebate(sharedId).then((data) => {
+        if (!data || data.status === "processing") return;
+        setTopic(data.topic);
+        setDebateId(sharedId);
+        const allArgs = [
+          ...(data.pro_arguments || []),
+          ...(data.con_arguments || []),
+        ].sort((a, b) => {
+          const order = { opening: 0, rebuttal: 1, closing: 2 };
+          return (order[a.round_name] ?? 9) - (order[b.round_name] ?? 9);
+        });
+        setEvents(allArgs);
+        setVerdict(data.verdict || null);
+        setWinner(data.winner || null);
+        setPhase("complete");
+      }).catch(() => {});
+    }
+  }, []);
+
+  const handleShare = () => {
+    const url = `${window.location.origin}${window.location.pathname}?debate=${debateId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const handleSubmit = (newTopic, pro = null, con = null) => {
     setTopic(newTopic);
     if (debateMode === "human") {
       setPhase("human");
@@ -59,19 +104,24 @@ export default function App() {
     setVerdict(null);
     setWinner(null);
     setError(null);
-    setPhase("debating");
+    setDebateId(generateDebateId());
+    setProPersona(pro);
+    setConPersona(con);
+    setPendingVoteTopic(newTopic);
+    setPhase("prevote");
+  };
 
+  const handleStartDebate = async (topicToDebate) => {
+    setPhase("debating");
     try {
-      for await (const msg of streamDebateFetch(newTopic)) {
+      for await (const msg of streamDebateFetch(topicToDebate, debateId, proPersona, conPersona)) {
         if (msg.type === "status") {
           setStatus(msg.data);
         } else if (msg.type === "sources_ready") {
           setStatus((prev) => ({ ...prev, ...msg.data }));
         } else if (msg.type === "argument_start") {
-          // Start a new streaming card
           setStreaming({ side: msg.data.side, round_name: msg.data.round_name, content: "" });
         } else if (msg.type === "token") {
-          // Append token to the streaming card
           setStreaming((prev) =>
             prev ? { ...prev, content: prev.content + msg.data.delta } : prev
           );
@@ -85,7 +135,6 @@ export default function App() {
         } else if (msg.type === "winner") {
           setWinner(msg.data.winner);
         } else if (msg.type === "complete") {
-          setDebateId(msg.data?.debate_id || null);
           setPhase("complete");
           if (window._refreshDebateHistory) window._refreshDebateHistory();
         } else if (msg.type === "error") {
@@ -126,6 +175,9 @@ export default function App() {
     setDebateMode("ai");
     setTopic("");
     setDebateId(null);
+    setPendingVoteTopic(null);
+    setProPersona(null);
+    setConPersona(null);
     setEvents([]);
     setStreaming(null);
     setStatus(null);
@@ -181,6 +233,27 @@ export default function App() {
           </div>
         )}
 
+        {phase === "prevote" && (
+          <div className="flex flex-col items-center justify-center flex-1 gap-6 px-6 py-16">
+            <div className="text-center">
+              <p className="text-slate-400 text-sm mb-1">Debate topic</p>
+              <h2 className="text-white text-xl font-semibold max-w-xl">"{pendingVoteTopic}"</h2>
+            </div>
+            <div className="w-full max-w-sm">
+              <VotePanel debateId={debateId} phase="before" topic={pendingVoteTopic} />
+            </div>
+            <button
+              onClick={() => handleStartDebate(pendingVoteTopic)}
+              className="px-8 py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl transition-colors"
+            >
+              ⚔️ Start Debate
+            </button>
+            <button onClick={handleReset} className="text-slate-600 hover:text-slate-400 text-sm transition-colors">
+              ← Back
+            </button>
+          </div>
+        )}
+
         {phase === "debating" && (
           <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center px-6 py-3 border-b border-slate-800 shrink-0">
@@ -198,6 +271,8 @@ export default function App() {
                 verdict={verdict}
                 winner={winner}
                 isLive={true}
+                proPersona={proPersona}
+                conPersona={conPersona}
               />
             </div>
           </div>
@@ -207,12 +282,22 @@ export default function App() {
           <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center px-6 py-3 border-b border-slate-800 shrink-0">
               <span className="text-slate-400 text-sm">Debate complete</span>
-              <button
-                onClick={handleReset}
-                className="text-sm px-4 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-colors"
-              >
-                + New Debate
-              </button>
+              <div className="flex items-center gap-2">
+                {debateId && (
+                  <button
+                    onClick={handleShare}
+                    className="text-sm px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors"
+                  >
+                    {copied ? "✓ Copied!" : "🔗 Share"}
+                  </button>
+                )}
+                <button
+                  onClick={handleReset}
+                  className="text-sm px-4 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-colors"
+                >
+                  + New Debate
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto min-h-0">
               <DebateArena
@@ -223,7 +308,14 @@ export default function App() {
                 verdict={verdict}
                 winner={winner}
                 isLive={false}
+                proPersona={proPersona}
+                conPersona={conPersona}
               />
+              {debateId && (
+                <div className="w-full max-w-5xl mx-auto px-4 pb-4">
+                  <VotePanel debateId={debateId} phase="after" topic={topic} />
+                </div>
+              )}
               {debateId && <FactCheckPanel debateId={debateId} />}
             </div>
           </div>

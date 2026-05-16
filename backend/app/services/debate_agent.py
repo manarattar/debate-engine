@@ -49,15 +49,30 @@ def _build_prompts(
     round_name: str,
     context: str,
     opponent_arguments: list[str] = None,
+    persona: str = None,
 ):
-    if side == Side.pro:
+    if round_name == "closing":
+        if side == Side.pro:
+            system = PRO_CLOSING_SYSTEM.format(topic=topic)
+        else:
+            system = CON_CLOSING_SYSTEM.format(topic=topic)
+    elif side == Side.pro:
         system = PRO_SYSTEM.format(topic=topic)
     elif side == Side.con:
         system = CON_SYSTEM.format(topic=topic)
     else:
         system = JUDGE_SYSTEM.format(topic=topic)
 
-    if round_name == "rebuttal" and opponent_arguments:
+    if persona and side != Side.judge:
+        system = f"You are debating as: {persona}.\n\n" + system
+
+    if round_name == "closing" and opponent_arguments:
+        opponent_text = "\n\n".join(a[:350] for a in opponent_arguments)
+        user_prompt = f"""The full debate so far — your opponent argued:
+{opponent_text}
+
+Deliver your closing statement. Summarize your strongest points and make your final appeal."""
+    elif round_name == "rebuttal" and opponent_arguments:
         opponent_text = "\n\n".join(a[:400] for a in opponent_arguments)
         user_prompt = f"""Sources supporting your position:
 {context}
@@ -98,6 +113,18 @@ Make the strongest possible case for the CON side using the provided sources.
 Be persuasive, logical, and concise (2-3 paragraphs max).
 Cite sources inline using [N] notation. Only use citations from the provided sources."""
 
+PRO_CLOSING_SYSTEM = (
+    'You are a skilled debate advocate giving your closing statement FOR: "{topic}"\n'
+    "Summarize your strongest points, expose opponent weaknesses, make a final appeal.\n"
+    "Do NOT introduce new claims. Reinforce what was established. (2 paragraphs max)."
+)
+
+CON_CLOSING_SYSTEM = (
+    'You are a skilled debate advocate giving your closing statement AGAINST: "{topic}"\n'
+    "Summarize your strongest points, expose opponent weaknesses, make a final appeal.\n"
+    "Do NOT introduce new claims. Reinforce what was established. (2 paragraphs max)."
+)
+
 JUDGE_SYSTEM = """You are an impartial judge evaluating a structured debate on: "{topic}"
 Analyze all arguments from both sides fairly. Identify the strongest and weakest points.
 Structure your verdict as:
@@ -118,11 +145,12 @@ async def generate_argument_streaming(
     round_name: str,
     chunks: list[dict],
     opponent_arguments: list[str] = None,
+    persona: str = None,
 ):
     """Async generator: yields ("token", delta) then ("complete", Argument)."""
     context, citations = _build_source_context(chunks)
     system, user_prompt = _build_prompts(
-        topic, side, round_name, context, opponent_arguments
+        topic, side, round_name, context, opponent_arguments, persona
     )
 
     loop = asyncio.get_running_loop()

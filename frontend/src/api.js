@@ -92,6 +92,23 @@ export function streamHumanRebuttal(sessionId, content) {
   return _ssePost(`/human-debate/${sessionId}/rebuttal`, { content });
 }
 
+// ── Voting ────────────────────────────────────────────────────────────────
+
+export async function submitVote(debateId, phase, side, sessionId) {
+  const res = await api.post("/vote", {
+    debate_id: debateId,
+    phase,
+    side,
+    session_id: sessionId,
+  });
+  return res.data;
+}
+
+export async function getVotes(debateId) {
+  const res = await api.get(`/vote/${debateId}`);
+  return res.data;
+}
+
 // ── Fact check ────────────────────────────────────────────────────────────
 
 export async function runFactCheck(debateId) {

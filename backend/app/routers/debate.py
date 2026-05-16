@@ -1,18 +1,19 @@
+import json
+import uuid
+
+from app.database import Debate, get_db
+from app.schemas import DebateRequest
+from app.services.debate_orchestrator import run_debate
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from app.database import get_db, Debate
-from app.schemas import DebateRequest, DebateResult
-from app.services.debate_orchestrator import run_debate
-import uuid
-import json
 
 router = APIRouter()
 
 
 @router.post("/debate")
 async def start_debate(request: DebateRequest, db: Session = Depends(get_db)):
-    debate_id = str(uuid.uuid4())[:8]
+    debate_id = request.debate_id or str(uuid.uuid4())[:8]
     db_debate = Debate(id=debate_id, topic=request.topic, status="processing")
     db.add(db_debate)
     db.commit()
@@ -21,13 +22,21 @@ async def start_debate(request: DebateRequest, db: Session = Depends(get_db)):
 
     async def stream():
         saved = False
-        async for chunk in run_debate(debate_id, request.topic, capture):
+        async for chunk in run_debate(
+            debate_id,
+            request.topic,
+            capture,
+            pro_persona=request.pro_persona,
+            con_persona=request.con_persona,
+        ):
             # Save BEFORE yielding the complete chunk — client may disconnect right after
             if not saved and "result" in capture:
-                db.query(Debate).filter(Debate.id == debate_id).update({
-                    "status": "complete",
-                    "result_json": json.dumps(capture["result"]),
-                })
+                db.query(Debate).filter(Debate.id == debate_id).update(
+                    {
+                        "status": "complete",
+                        "result_json": json.dumps(capture["result"]),
+                    }
+                )
                 db.commit()
                 saved = True
             yield chunk
@@ -55,7 +64,13 @@ def get_debate(debate_id: str, db: Session = Depends(get_db)):
 
 @router.get("/history")
 def get_history(db: Session = Depends(get_db)):
-    debates = db.query(Debate).filter(Debate.status == "complete").order_by(Debate.created_at.desc()).limit(20).all()
+    debates = (
+        db.query(Debate)
+        .filter(Debate.status == "complete")
+        .order_by(Debate.created_at.desc())
+        .limit(20)
+        .all()
+    )
     results = []
     for d in debates:
         winner = "unknown"
@@ -64,10 +79,12 @@ def get_history(db: Session = Depends(get_db)):
                 winner = json.loads(d.result_json).get("winner", "unknown")
             except Exception:
                 pass
-        results.append({
-            "debate_id": d.id,
-            "topic": d.topic,
-            "winner": winner,
-            "created_at": d.created_at.isoformat() if d.created_at else "",
-        })
+        results.append(
+            {
+                "debate_id": d.id,
+                "topic": d.topic,
+                "winner": winner,
+                "created_at": d.created_at.isoformat() if d.created_at else "",
+            }
+        )
     return results
