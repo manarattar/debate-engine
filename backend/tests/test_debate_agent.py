@@ -170,3 +170,64 @@ class TestBuildPromptsClosing:
             "AI ethics", Side.pro, "rebuttal", "ctx", ["opp arg"]
         )
         assert "arguing FOR" in system
+
+
+# ── _build_prompts (cross-examination) ───────────────────────────────────────
+
+
+class TestBuildPromptsCrossExam:
+    def test_pro_questions_uses_cross_question_system(self):
+        system, _ = _build_prompts(
+            "AI ethics", Side.pro, "cross_pro_questions", "", ["Con said X."]
+        )
+        assert "questioner" in system.lower() or "questions" in system.lower()
+        assert "AI ethics" in system
+
+    def test_con_questions_uses_cross_question_system(self):
+        system, _ = _build_prompts(
+            "Nuclear energy", Side.con, "cross_con_questions", "", ["Pro said Y."]
+        )
+        assert "questioner" in system.lower() or "questions" in system.lower()
+
+    def test_cross_question_prompt_includes_opponent_arguments(self):
+        _, user_prompt = _build_prompts(
+            "AI ethics", Side.pro, "cross_pro_questions", "", ["Con argued Z."]
+        )
+        assert "Con argued Z." in user_prompt
+
+    def test_con_answers_uses_cross_answer_system(self):
+        system, _ = _build_prompts(
+            "AI ethics", Side.con, "cross_con_answers", "", ["Question 1?"]
+        )
+        assert "answer" in system.lower()
+        assert "AI ethics" in system
+
+    def test_pro_answers_uses_cross_answer_system(self):
+        system, _ = _build_prompts(
+            "Nuclear energy", Side.pro, "cross_pro_answers", "", ["Question A?"]
+        )
+        assert "answer" in system.lower()
+
+    def test_cross_answer_prompt_includes_questions(self):
+        _, user_prompt = _build_prompts(
+            "AI ethics", Side.con, "cross_con_answers", "", ["Why do you think X?"]
+        )
+        assert "Why do you think X?" in user_prompt
+
+    def test_persona_not_injected_in_cross_rounds(self):
+        for round_name in (
+            "cross_pro_questions",
+            "cross_con_answers",
+            "cross_con_questions",
+            "cross_pro_answers",
+        ):
+            system, _ = _build_prompts(
+                "AI ethics", Side.pro, round_name, "", [], persona="Elon Musk"
+            )
+            assert "Elon Musk" not in system
+
+    def test_persona_injected_in_opening_round(self):
+        system, _ = _build_prompts(
+            "AI ethics", Side.pro, "opening", "ctx", None, persona="Elon Musk"
+        )
+        assert "Elon Musk" in system

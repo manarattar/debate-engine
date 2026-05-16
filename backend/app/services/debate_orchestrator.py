@@ -214,10 +214,123 @@ async def run_debate(
             except Exception:
                 pass
 
-        # Step 5 — closing statements (streamed)
+        # Step 5 — cross-examination (streamed)
         yield _sse(
             "status",
-            {"message": "PRO side: closing statement...", "step": 5, "total": 6},
+            {"message": "Cross-examination: PRO questions...", "step": 5, "total": 7},
+        )
+        pro_questions_content = ""
+        async for chunk in _stream_argument(
+            topic,
+            Side.pro,
+            "cross_pro_questions",
+            [],
+            [a.content for a in con_args],
+            persona=pro_persona,
+        ):
+            yield chunk
+            try:
+                msg = json.loads(chunk.replace("data: ", "").strip())
+                if msg.get("type") == "argument":
+                    pro_questions_content = msg["data"]["content"]
+                    pro_args.append(
+                        Argument(
+                            side=Side.pro,
+                            round_name="cross_pro_questions",
+                            content=pro_questions_content,
+                            citations=[],
+                        )
+                    )
+            except Exception:
+                pass
+
+        yield _sse(
+            "status",
+            {"message": "Cross-examination: CON answers...", "step": 5, "total": 7},
+        )
+        async for chunk in _stream_argument(
+            topic,
+            Side.con,
+            "cross_con_answers",
+            [],
+            [pro_questions_content] if pro_questions_content else None,
+            persona=con_persona,
+        ):
+            yield chunk
+            try:
+                msg = json.loads(chunk.replace("data: ", "").strip())
+                if msg.get("type") == "argument":
+                    con_args.append(
+                        Argument(
+                            side=Side.con,
+                            round_name="cross_con_answers",
+                            content=msg["data"]["content"],
+                            citations=[],
+                        )
+                    )
+            except Exception:
+                pass
+
+        yield _sse(
+            "status",
+            {"message": "Cross-examination: CON questions...", "step": 5, "total": 7},
+        )
+        con_questions_content = ""
+        async for chunk in _stream_argument(
+            topic,
+            Side.con,
+            "cross_con_questions",
+            [],
+            [a.content for a in pro_args],
+            persona=con_persona,
+        ):
+            yield chunk
+            try:
+                msg = json.loads(chunk.replace("data: ", "").strip())
+                if msg.get("type") == "argument":
+                    con_questions_content = msg["data"]["content"]
+                    con_args.append(
+                        Argument(
+                            side=Side.con,
+                            round_name="cross_con_questions",
+                            content=con_questions_content,
+                            citations=[],
+                        )
+                    )
+            except Exception:
+                pass
+
+        yield _sse(
+            "status",
+            {"message": "Cross-examination: PRO answers...", "step": 5, "total": 7},
+        )
+        async for chunk in _stream_argument(
+            topic,
+            Side.pro,
+            "cross_pro_answers",
+            [],
+            [con_questions_content] if con_questions_content else None,
+            persona=pro_persona,
+        ):
+            yield chunk
+            try:
+                msg = json.loads(chunk.replace("data: ", "").strip())
+                if msg.get("type") == "argument":
+                    pro_args.append(
+                        Argument(
+                            side=Side.pro,
+                            round_name="cross_pro_answers",
+                            content=msg["data"]["content"],
+                            citations=[],
+                        )
+                    )
+            except Exception:
+                pass
+
+        # Step 6 — closing statements (streamed)
+        yield _sse(
+            "status",
+            {"message": "PRO side: closing statement...", "step": 6, "total": 7},
         )
         con_debate_so_far = [a.content for a in con_args]
         async for chunk in _stream_argument(
@@ -240,7 +353,7 @@ async def run_debate(
 
         yield _sse(
             "status",
-            {"message": "CON side: closing statement...", "step": 5, "total": 6},
+            {"message": "CON side: closing statement...", "step": 6, "total": 7},
         )
         pro_debate_so_far = [a.content for a in pro_args]
         async for chunk in _stream_argument(
@@ -261,9 +374,9 @@ async def run_debate(
             except Exception:
                 pass
 
-        # Step 6 — judge verdict (streamed)
+        # Step 7 — judge verdict (streamed)
         yield _sse(
-            "status", {"message": "Judge is deliberating...", "step": 6, "total": 6}
+            "status", {"message": "Judge is deliberating...", "step": 7, "total": 7}
         )
         pro_full = "\n\n".join(a.content for a in pro_args)
         con_full = "\n\n".join(a.content for a in con_args)

@@ -51,7 +51,14 @@ def _build_prompts(
     opponent_arguments: list[str] = None,
     persona: str = None,
 ):
-    if round_name == "closing":
+    _cross_q_rounds = {"cross_pro_questions", "cross_con_questions"}
+    _cross_a_rounds = {"cross_pro_answers", "cross_con_answers"}
+
+    if round_name in _cross_q_rounds:
+        system = CROSS_QUESTION_SYSTEM.format(topic=topic)
+    elif round_name in _cross_a_rounds:
+        system = CROSS_ANSWER_SYSTEM.format(topic=topic)
+    elif round_name == "closing":
         if side == Side.pro:
             system = PRO_CLOSING_SYSTEM.format(topic=topic)
         else:
@@ -63,10 +70,26 @@ def _build_prompts(
     else:
         system = JUDGE_SYSTEM.format(topic=topic)
 
-    if persona and side != Side.judge:
+    if (
+        persona
+        and side != Side.judge
+        and round_name not in _cross_q_rounds | _cross_a_rounds
+    ):
         system = f"You are debating as: {persona}.\n\n" + system
 
-    if round_name == "closing" and opponent_arguments:
+    if round_name in _cross_q_rounds and opponent_arguments:
+        opponent_text = "\n\n".join(a[:400] for a in opponent_arguments)
+        user_prompt = (
+            f"Your opponent argued:\n{opponent_text}\n\n"
+            "Generate your 2 cross-examination questions targeting the weakest points."
+        )
+    elif round_name in _cross_a_rounds and opponent_arguments:
+        questions = opponent_arguments[0] if opponent_arguments else ""
+        user_prompt = (
+            f"Your opponent asked you:\n{questions}\n\n"
+            "Answer both questions directly and confidently."
+        )
+    elif round_name == "closing" and opponent_arguments:
         opponent_text = "\n\n".join(a[:350] for a in opponent_arguments)
         user_prompt = f"""The full debate so far — your opponent argued:
 {opponent_text}
@@ -123,6 +146,19 @@ CON_CLOSING_SYSTEM = (
     'You are a skilled debate advocate giving your closing statement AGAINST: "{topic}"\n'
     "Summarize your strongest points, expose opponent weaknesses, make a final appeal.\n"
     "Do NOT introduce new claims. Reinforce what was established. (2 paragraphs max)."
+)
+
+CROSS_QUESTION_SYSTEM = (
+    'You are a sharp debate questioner challenging the opposing side on: "{topic}"\n'
+    "Generate exactly 2 pointed questions that expose gaps, unsupported claims, "
+    "or contradictions in your opponent's arguments.\n"
+    "Format: number each question (1. and 2.). Be direct and concise."
+)
+
+CROSS_ANSWER_SYSTEM = (
+    'You are a skilled debate advocate defending your position on: "{topic}"\n'
+    "Answer each of your opponent's questions directly and confidently.\n"
+    "Keep each answer to 2-3 sentences. Address both questions in order (1. then 2.)."
 )
 
 JUDGE_SYSTEM = """You are an impartial judge evaluating a structured debate on: "{topic}"

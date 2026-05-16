@@ -22,6 +22,10 @@ const SIDE_STYLES = {
 const ROUND_LABELS = {
   opening: "Opening Statement",
   rebuttal: "Rebuttal",
+  cross_pro_questions: "Cross-Examination Questions",
+  cross_con_answers: "Cross-Examination Answers",
+  cross_con_questions: "Cross-Examination Questions",
+  cross_pro_answers: "Cross-Examination Answers",
   closing: "Closing Statement",
   verdict: "Judge's Verdict",
 };
