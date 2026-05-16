@@ -2,7 +2,7 @@ import os
 
 from app.config import get_settings
 from app.database import create_tables
-from app.routers import debate, factcheck, human_debate, vote
+from app.routers import debate, factcheck, human_debate, reaction, vote
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -21,6 +21,7 @@ app.include_router(debate.router, prefix="/api")
 app.include_router(human_debate.router, prefix="/api")
 app.include_router(factcheck.router, prefix="/api")
 app.include_router(vote.router, prefix="/api")
+app.include_router(reaction.router, prefix="/api")
 
 
 @app.on_event("startup")

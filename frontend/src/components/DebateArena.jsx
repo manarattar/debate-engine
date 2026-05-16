@@ -47,7 +47,7 @@ function CrossExamSection({ pair, events, streaming }) {
   );
 }
 
-function RoundColumns({ round, proArgs, conArgs, streaming, scores }) {
+function RoundColumns({ round, proArgs, conArgs, streaming, scores, debateId, reactions }) {
   const pro = proArgs.find((a) => a.round_name === round);
   const con = conArgs.find((a) => a.round_name === round);
   const proStreaming = streaming?.side === "pro" && streaming?.round_name === round;
@@ -57,7 +57,7 @@ function RoundColumns({ round, proArgs, conArgs, streaming, scores }) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
       <div>
         {pro ? (
-          <ArgumentCard {...pro} score={scores[`pro_${round}`]} />
+          <ArgumentCard {...pro} score={scores[`pro_${round}`]} debateId={debateId} reactions={reactions} />
         ) : proStreaming ? (
           <ArgumentCard side="pro" round_name={round} content={streaming.content} citations={[]} streaming={true} />
         ) : (
@@ -68,7 +68,7 @@ function RoundColumns({ round, proArgs, conArgs, streaming, scores }) {
       </div>
       <div>
         {con ? (
-          <ArgumentCard {...con} score={scores[`con_${round}`]} />
+          <ArgumentCard {...con} score={scores[`con_${round}`]} debateId={debateId} reactions={reactions} />
         ) : conStreaming ? (
           <ArgumentCard side="con" round_name={round} content={streaming.content} citations={[]} streaming={true} />
         ) : (
@@ -81,7 +81,7 @@ function RoundColumns({ round, proArgs, conArgs, streaming, scores }) {
   );
 }
 
-export default function DebateArena({ topic, events, streaming, status, verdict, winner, scores = {}, isLive, proPersona, conPersona }) {
+export default function DebateArena({ topic, events, streaming, status, verdict, winner, scores = {}, reactions = {}, debateId, isLive, proPersona, conPersona }) {
   const proArgs = events.filter((e) => e.side === "pro");
   const conArgs = events.filter((e) => e.side === "con");
 
@@ -147,7 +147,7 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
       {/* Debate rounds */}
       <div className="flex flex-col gap-6">
         {roundsToShow.filter((r) => r !== "closing").map((round) => (
-          <RoundColumns key={round} round={round} proArgs={proArgs} conArgs={conArgs} streaming={streaming} scores={scores} />
+          <RoundColumns key={round} round={round} proArgs={proArgs} conArgs={conArgs} streaming={streaming} scores={scores} debateId={debateId} reactions={reactions} />
         ))}
 
         {/* Cross-examination section — full width */}
@@ -168,7 +168,7 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
 
         {/* Closing rounds */}
         {roundsToShow.includes("closing") && (
-          <RoundColumns round="closing" proArgs={proArgs} conArgs={conArgs} streaming={streaming} scores={scores} />
+          <RoundColumns round="closing" proArgs={proArgs} conArgs={conArgs} streaming={streaming} scores={scores} debateId={debateId} reactions={reactions} />
         )}
       </div>
 

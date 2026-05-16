@@ -5,7 +5,7 @@ import HumanDebatePage from "./components/HumanDebatePage";
 import HistoryPanel from "./components/HistoryPanel";
 import FactCheckPanel from "./components/FactCheckPanel";
 import VotePanel from "./components/VotePanel";
-import { getDebate } from "./api";
+import { getDebate, getReactions } from "./api";
 import "./index.css";
 
 function generateDebateId() {
@@ -59,6 +59,7 @@ export default function App() {
   const [verdict, setVerdict] = useState(null);
   const [winner, setWinner] = useState(null);
   const [scores, setScores] = useState({});        // {pro_opening: 8, con_opening: 6, ...}
+  const [reactions, setReactions] = useState({});  // {pro_opening: {likes, dislikes}, ...}
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
 
@@ -105,6 +106,7 @@ export default function App() {
     setVerdict(null);
     setWinner(null);
     setScores({});
+    setReactions({});
     setError(null);
     setDebateId(generateDebateId());
     setProPersona(pro);
@@ -141,6 +143,7 @@ export default function App() {
         } else if (msg.type === "complete") {
           setPhase("complete");
           if (window._refreshDebateHistory) window._refreshDebateHistory();
+          getReactions(debateId).then((r) => setReactions(r.reactions || {})).catch(() => {});
         } else if (msg.type === "error") {
           setError(msg.data?.message || "Something went wrong");
           setPhase("error");
@@ -188,6 +191,7 @@ export default function App() {
     setVerdict(null);
     setWinner(null);
     setScores({});
+    setReactions({});
     setError(null);
   };
 
@@ -276,6 +280,8 @@ export default function App() {
                 verdict={verdict}
                 winner={winner}
                 scores={scores}
+                reactions={reactions}
+                debateId={debateId}
                 isLive={true}
                 proPersona={proPersona}
                 conPersona={conPersona}
@@ -314,6 +320,8 @@ export default function App() {
                 verdict={verdict}
                 winner={winner}
                 scores={scores}
+                reactions={reactions}
+                debateId={debateId}
                 isLive={false}
                 proPersona={proPersona}
                 conPersona={conPersona}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { submitReaction } from "../api";
 
 const SIDE_STYLES = {
   pro: {
@@ -30,12 +31,24 @@ const ROUND_LABELS = {
   verdict: "Judge's Verdict",
 };
 
-function ScoreBadge({ score, side }) {
-  const color = score >= 8
-    ? "text-emerald-400 border-emerald-500/40 bg-emerald-900/30"
-    : score >= 5
-      ? "text-yellow-400 border-yellow-500/40 bg-yellow-900/20"
-      : "text-red-400 border-red-500/40 bg-red-900/20";
+const SCOREABLE_ROUNDS = new Set(["opening", "rebuttal", "closing"]);
+
+function getSessionId() {
+  let id = sessionStorage.getItem("debate_session_id");
+  if (!id) {
+    id = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+    sessionStorage.setItem("debate_session_id", id);
+  }
+  return id;
+}
+
+function ScoreBadge({ score }) {
+  const color =
+    score >= 8
+      ? "text-emerald-400 border-emerald-500/40 bg-emerald-900/30"
+      : score >= 5
+        ? "text-yellow-400 border-yellow-500/40 bg-yellow-900/20"
+        : "text-red-400 border-red-500/40 bg-red-900/20";
   return (
     <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${color}`}>
       {score}/10
@@ -43,9 +56,75 @@ function ScoreBadge({ score, side }) {
   );
 }
 
-export default function ArgumentCard({ side, round_name, content, citations = [], streaming = false, score }) {
+function ReactionButtons({ debateId, side, round_name, initialReactions }) {
+  const [myReaction, setMyReaction] = useState(null);
+  const [likes, setLikes] = useState(initialReactions?.likes ?? 0);
+  const [dislikes, setDislikes] = useState(initialReactions?.dislikes ?? 0);
+
+  const handleReact = async (reaction) => {
+    const sessionId = getSessionId();
+    const prev = myReaction;
+    const isToggleOff = prev === reaction;
+
+    // Optimistic update
+    if (isToggleOff) {
+      setMyReaction(null);
+      reaction === "like" ? setLikes((n) => n - 1) : setDislikes((n) => n - 1);
+    } else {
+      if (prev === "like") setLikes((n) => n - 1);
+      if (prev === "dislike") setDislikes((n) => n - 1);
+      setMyReaction(reaction);
+      reaction === "like" ? setLikes((n) => n + 1) : setDislikes((n) => n + 1);
+    }
+
+    try {
+      await submitReaction(debateId, side, round_name, reaction, sessionId);
+    } catch {
+      // Revert on error
+      setMyReaction(prev);
+      setLikes(initialReactions?.likes ?? 0);
+      setDislikes(initialReactions?.dislikes ?? 0);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 pt-1">
+      <button
+        onClick={() => handleReact("like")}
+        className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-colors
+          ${myReaction === "like"
+            ? "bg-emerald-900/50 border-emerald-500/50 text-emerald-400"
+            : "border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500"}`}
+      >
+        👍 {likes > 0 && <span>{likes}</span>}
+      </button>
+      <button
+        onClick={() => handleReact("dislike")}
+        className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-colors
+          ${myReaction === "dislike"
+            ? "bg-red-900/50 border-red-500/50 text-red-400"
+            : "border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500"}`}
+      >
+        👎 {dislikes > 0 && <span>{dislikes}</span>}
+      </button>
+    </div>
+  );
+}
+
+export default function ArgumentCard({
+  side,
+  round_name,
+  content,
+  citations = [],
+  streaming = false,
+  score,
+  debateId,
+  reactions,
+}) {
   const [showCitations, setShowCitations] = useState(false);
   const styles = SIDE_STYLES[side] || SIDE_STYLES.pro;
+  const reactionKey = `${side}_${round_name}`;
+  const showReactions = debateId && !streaming && SCOREABLE_ROUNDS.has(round_name);
 
   return (
     <div className={`border ${styles.border} ${styles.bg} rounded-xl p-5 flex flex-col gap-3`}>
@@ -55,7 +134,7 @@ export default function ArgumentCard({ side, round_name, content, citations = []
             {styles.icon} {styles.label}
           </span>
           <span className="text-slate-400 text-sm">{ROUND_LABELS[round_name] || round_name}</span>
-          {score !== undefined && <ScoreBadge score={score} side={side} />}
+          {score !== undefined && <ScoreBadge score={score} />}
         </div>
         {citations.length > 0 && (
           <button
@@ -71,6 +150,15 @@ export default function ArgumentCard({ side, round_name, content, citations = []
         {content}
         {streaming && <span className="animate-pulse text-violet-400">▌</span>}
       </p>
+
+      {showReactions && (
+        <ReactionButtons
+          debateId={debateId}
+          side={side}
+          round_name={round_name}
+          initialReactions={reactions?.[reactionKey]}
+        />
+      )}
 
       {showCitations && citations.length > 0 && (
         <div className={`border ${styles.citationBg} rounded-lg p-3 flex flex-col gap-2`}>

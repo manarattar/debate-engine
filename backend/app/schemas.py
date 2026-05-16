@@ -127,6 +127,38 @@ class VoteResult(BaseModel):
     after: VoteTally
 
 
+class ReactionRequest(BaseModel):
+    debate_id: str
+    side: str  # "pro" | "con"
+    round_name: str
+    reaction: str  # "like" | "dislike"
+    session_id: str
+
+    @field_validator("reaction")
+    @classmethod
+    def reaction_must_be_valid(cls, v: str) -> str:
+        if v not in ("like", "dislike"):
+            raise ValueError("reaction must be 'like' or 'dislike'")
+        return v
+
+    @field_validator("side")
+    @classmethod
+    def side_must_be_valid(cls, v: str) -> str:
+        if v not in ("pro", "con"):
+            raise ValueError("side must be 'pro' or 'con'")
+        return v
+
+
+class ArgumentReactionTally(BaseModel):
+    likes: int
+    dislikes: int
+
+
+class ReactionResult(BaseModel):
+    debate_id: str
+    reactions: dict[str, ArgumentReactionTally]  # key: "{side}_{round_name}"
+
+
 class FactCheckClaim(BaseModel):
     claim: str
     side: str  # "pro" | "con"

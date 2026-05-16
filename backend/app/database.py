@@ -65,6 +65,18 @@ class Vote(Base):
     created_at = Column(DateTime, server_default=func.now())
 
 
+class ArgumentReaction(Base):
+    __tablename__ = "argument_reactions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    debate_id = Column(String, nullable=False, index=True)
+    side = Column(String, nullable=False)  # "pro" | "con"
+    round_name = Column(String, nullable=False)
+    reaction = Column(String, nullable=False)  # "like" | "dislike"
+    session_id = Column(String, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+
 def create_tables():
     Base.metadata.create_all(bind=engine)
 

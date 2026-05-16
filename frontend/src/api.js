@@ -109,6 +109,24 @@ export async function getVotes(debateId) {
   return res.data;
 }
 
+// ── Reactions ─────────────────────────────────────────────────────────────
+
+export async function submitReaction(debateId, side, roundName, reaction, sessionId) {
+  const res = await api.post("/reaction", {
+    debate_id: debateId,
+    side,
+    round_name: roundName,
+    reaction,
+    session_id: sessionId,
+  });
+  return res.data;
+}
+
+export async function getReactions(debateId) {
+  const res = await api.get(`/reaction/${debateId}`);
+  return res.data;
+}
+
 // ── Fact check ────────────────────────────────────────────────────────────
 
 export async function runFactCheck(debateId) {
