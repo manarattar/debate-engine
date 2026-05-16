@@ -5,7 +5,8 @@ from typing import AsyncGenerator
 from app.schemas import Argument, DebateResult, Side
 from app.services.debate_agent import (extract_winner,
                                        generate_argument_streaming,
-                                       generate_search_queries)
+                                       generate_search_queries,
+                                       score_arguments)
 from app.services.debate_indexer import index_sources, retrieve
 from app.services.source_collector import collect_sources
 
@@ -397,6 +398,11 @@ async def run_debate(
 
         winner = extract_winner(verdict_content)
         yield _sse("winner", {"winner": winner})
+
+        # Score each main-round argument (non-blocking, single LLM call)
+        scores = await _exec(loop, score_arguments, topic, pro_args, con_args)
+        if scores:
+            yield _sse("scores", scores)
 
         result = DebateResult(
             debate_id=debate_id,

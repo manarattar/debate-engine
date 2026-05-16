@@ -279,6 +279,64 @@ Make queries specific and likely to find strong evidence-backed arguments.""",
         }
 
 
+SCORE_SYSTEM = (
+    "You are an impartial debate judge. Score each argument on a scale of 1-10 "
+    "based on: logical strength, use of evidence, clarity, and persuasiveness. "
+    "Return ONLY valid JSON — no markdown, no extra text."
+)
+
+
+def score_arguments(topic: str, pro_args: list, con_args: list) -> dict:
+    """Return a dict mapping '{side}_{round_name}' -> int score (1-10).
+
+    Only scores main rounds: opening, rebuttal, closing.
+    """
+    scoreable_rounds = {"opening", "rebuttal", "closing"}
+
+    entries = []
+    for a in pro_args:
+        if a.round_name in scoreable_rounds:
+            entries.append({"key": f"pro_{a.round_name}", "content": a.content[:300]})
+    for a in con_args:
+        if a.round_name in scoreable_rounds:
+            entries.append({"key": f"con_{a.round_name}", "content": a.content[:300]})
+
+    if not entries:
+        return {}
+
+    items_json = json.dumps(
+        [{"key": e["key"], "excerpt": e["content"]} for e in entries], indent=2
+    )
+    user_prompt = (
+        f'Debate topic: "{topic}"\n\n'
+        f"Score each of these debate arguments (1-10):\n{items_json}\n\n"
+        "Return JSON object where keys are the provided keys and values are integer scores.\n"
+        'Example: {"pro_opening": 8, "con_opening": 6}'
+    )
+
+    client = _make_client()
+    response = client.chat.completions.create(
+        model=settings.model_name,
+        messages=[
+            {"role": "system", "content": SCORE_SYSTEM},
+            {"role": "user", "content": user_prompt},
+        ],
+        temperature=0.2,
+        max_tokens=200,
+    )
+    text = response.choices[0].message.content.strip()
+    text = re.sub(r"```(?:json)?", "", text).strip().strip("`")
+    try:
+        scores = json.loads(text)
+        return {
+            k: max(1, min(10, int(v)))
+            for k, v in scores.items()
+            if isinstance(v, (int, float))
+        }
+    except Exception:
+        return {}
+
+
 def extract_winner(verdict_content: str) -> str:
     """Parse judge verdict text; returns 'pro', 'con', or 'tie' (fallback)."""
     text = verdict_content.upper().strip()

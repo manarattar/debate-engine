@@ -58,6 +58,7 @@ export default function App() {
   const [status, setStatus] = useState(null);
   const [verdict, setVerdict] = useState(null);
   const [winner, setWinner] = useState(null);
+  const [scores, setScores] = useState({});        // {pro_opening: 8, con_opening: 6, ...}
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
 
@@ -103,6 +104,7 @@ export default function App() {
     setStatus(null);
     setVerdict(null);
     setWinner(null);
+    setScores({});
     setError(null);
     setDebateId(generateDebateId());
     setProPersona(pro);
@@ -134,6 +136,8 @@ export default function App() {
           }
         } else if (msg.type === "winner") {
           setWinner(msg.data.winner);
+        } else if (msg.type === "scores") {
+          setScores(msg.data);
         } else if (msg.type === "complete") {
           setPhase("complete");
           if (window._refreshDebateHistory) window._refreshDebateHistory();
@@ -183,6 +187,7 @@ export default function App() {
     setStatus(null);
     setVerdict(null);
     setWinner(null);
+    setScores({});
     setError(null);
   };
 
@@ -270,6 +275,7 @@ export default function App() {
                 status={status}
                 verdict={verdict}
                 winner={winner}
+                scores={scores}
                 isLive={true}
                 proPersona={proPersona}
                 conPersona={conPersona}
@@ -307,6 +313,7 @@ export default function App() {
                 status={null}
                 verdict={verdict}
                 winner={winner}
+                scores={scores}
                 isLive={false}
                 proPersona={proPersona}
                 conPersona={conPersona}

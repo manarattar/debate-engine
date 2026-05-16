@@ -47,7 +47,41 @@ function CrossExamSection({ pair, events, streaming }) {
   );
 }
 
-export default function DebateArena({ topic, events, streaming, status, verdict, winner, isLive, proPersona, conPersona }) {
+function RoundColumns({ round, proArgs, conArgs, streaming, scores }) {
+  const pro = proArgs.find((a) => a.round_name === round);
+  const con = conArgs.find((a) => a.round_name === round);
+  const proStreaming = streaming?.side === "pro" && streaming?.round_name === round;
+  const conStreaming = streaming?.side === "con" && streaming?.round_name === round;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+      <div>
+        {pro ? (
+          <ArgumentCard {...pro} score={scores[`pro_${round}`]} />
+        ) : proStreaming ? (
+          <ArgumentCard side="pro" round_name={round} content={streaming.content} citations={[]} streaming={true} />
+        ) : (
+          <div className="border border-emerald-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
+            <span className="text-emerald-900 text-xs">waiting...</span>
+          </div>
+        )}
+      </div>
+      <div>
+        {con ? (
+          <ArgumentCard {...con} score={scores[`con_${round}`]} />
+        ) : conStreaming ? (
+          <ArgumentCard side="con" round_name={round} content={streaming.content} citations={[]} streaming={true} />
+        ) : (
+          <div className="border border-red-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
+            <span className="text-red-900 text-xs">waiting...</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function DebateArena({ topic, events, streaming, status, verdict, winner, scores = {}, isLive, proPersona, conPersona }) {
   const proArgs = events.filter((e) => e.side === "pro");
   const conArgs = events.filter((e) => e.side === "con");
 
@@ -110,41 +144,11 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
         </div>
       )}
 
-      {/* Main debate rounds (opening, rebuttal) */}
+      {/* Debate rounds */}
       <div className="flex flex-col gap-6">
-        {roundsToShow.filter((r) => r !== "closing").map((round) => {
-          const pro = proArgs.find((a) => a.round_name === round);
-          const con = conArgs.find((a) => a.round_name === round);
-          const proStreaming = streaming?.side === "pro" && streaming?.round_name === round;
-          const conStreaming = streaming?.side === "con" && streaming?.round_name === round;
-
-          return (
-            <div key={round} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-              <div>
-                {pro ? (
-                  <ArgumentCard {...pro} />
-                ) : proStreaming ? (
-                  <ArgumentCard side="pro" round_name={round} content={streaming.content} citations={[]} streaming={true} />
-                ) : (
-                  <div className="border border-emerald-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
-                    <span className="text-emerald-900 text-xs">waiting...</span>
-                  </div>
-                )}
-              </div>
-              <div>
-                {con ? (
-                  <ArgumentCard {...con} />
-                ) : conStreaming ? (
-                  <ArgumentCard side="con" round_name={round} content={streaming.content} citations={[]} streaming={true} />
-                ) : (
-                  <div className="border border-red-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
-                    <span className="text-red-900 text-xs">waiting...</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+        {roundsToShow.filter((r) => r !== "closing").map((round) => (
+          <RoundColumns key={round} round={round} proArgs={proArgs} conArgs={conArgs} streaming={streaming} scores={scores} />
+        ))}
 
         {/* Cross-examination section — full width */}
         {hasCrossExam && (
@@ -163,39 +167,9 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
         )}
 
         {/* Closing rounds */}
-        {roundsToShow.includes("closing") && (() => {
-          const round = "closing";
-          const pro = proArgs.find((a) => a.round_name === round);
-          const con = conArgs.find((a) => a.round_name === round);
-          const proStreaming = streaming?.side === "pro" && streaming?.round_name === round;
-          const conStreaming = streaming?.side === "con" && streaming?.round_name === round;
-          return (
-            <div key={round} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-              <div>
-                {pro ? (
-                  <ArgumentCard {...pro} />
-                ) : proStreaming ? (
-                  <ArgumentCard side="pro" round_name={round} content={streaming.content} citations={[]} streaming={true} />
-                ) : (
-                  <div className="border border-emerald-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
-                    <span className="text-emerald-900 text-xs">waiting...</span>
-                  </div>
-                )}
-              </div>
-              <div>
-                {con ? (
-                  <ArgumentCard {...con} />
-                ) : conStreaming ? (
-                  <ArgumentCard side="con" round_name={round} content={streaming.content} citations={[]} streaming={true} />
-                ) : (
-                  <div className="border border-red-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
-                    <span className="text-red-900 text-xs">waiting...</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })()}
+        {roundsToShow.includes("closing") && (
+          <RoundColumns round="closing" proArgs={proArgs} conArgs={conArgs} streaming={streaming} scores={scores} />
+        )}
       </div>
 
       {/* Judge verdict */}

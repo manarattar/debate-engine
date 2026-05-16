@@ -30,7 +30,20 @@ const ROUND_LABELS = {
   verdict: "Judge's Verdict",
 };
 
-export default function ArgumentCard({ side, round_name, content, citations = [], streaming = false }) {
+function ScoreBadge({ score, side }) {
+  const color = score >= 8
+    ? "text-emerald-400 border-emerald-500/40 bg-emerald-900/30"
+    : score >= 5
+      ? "text-yellow-400 border-yellow-500/40 bg-yellow-900/20"
+      : "text-red-400 border-red-500/40 bg-red-900/20";
+  return (
+    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${color}`}>
+      {score}/10
+    </span>
+  );
+}
+
+export default function ArgumentCard({ side, round_name, content, citations = [], streaming = false, score }) {
   const [showCitations, setShowCitations] = useState(false);
   const styles = SIDE_STYLES[side] || SIDE_STYLES.pro;
 
@@ -42,6 +55,7 @@ export default function ArgumentCard({ side, round_name, content, citations = []
             {styles.icon} {styles.label}
           </span>
           <span className="text-slate-400 text-sm">{ROUND_LABELS[round_name] || round_name}</span>
+          {score !== undefined && <ScoreBadge score={score} side={side} />}
         </div>
         {citations.length > 0 && (
           <button
