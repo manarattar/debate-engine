@@ -23,6 +23,7 @@ class Debate(Base):
     topic = Column(String, nullable=False)
     status = Column(String, default="processing")  # processing / complete / failed
     result_json = Column(Text, nullable=True)
+    view_count = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
 
 

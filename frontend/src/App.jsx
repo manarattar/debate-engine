@@ -177,6 +177,26 @@ export default function App() {
     } catch {}
   };
 
+  const handleRematch = () => {
+    const savedTopic = topic;
+    const savedPro = proPersona;
+    const savedCon = conPersona;
+    setEvents([]);
+    setStreaming(null);
+    setStatus(null);
+    setVerdict(null);
+    setWinner(null);
+    setScores({});
+    setReactions({});
+    setError(null);
+    setDebateId(generateDebateId());
+    setPendingVoteTopic(savedTopic);
+    setTopic(savedTopic);
+    setProPersona(savedPro);
+    setConPersona(savedCon);
+    setPhase("prevote");
+  };
+
   const handleReset = () => {
     setPhase("idle");
     setDebateMode("ai");
@@ -295,6 +315,15 @@ export default function App() {
             <div className="flex justify-between items-center px-6 py-3 border-b border-slate-800 shrink-0">
               <span className="text-slate-400 text-sm">Debate complete</span>
               <div className="flex items-center gap-2">
+                {debateId && (
+                  <button
+                    onClick={handleRematch}
+                    className="text-sm px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors"
+                    title="Run the same topic and personas again"
+                  >
+                    ⚔️ Rematch
+                  </button>
+                )}
                 {debateId && (
                   <a
                     href={`${import.meta.env.VITE_API_URL || ""}/api/debate/${debateId}/pdf`}

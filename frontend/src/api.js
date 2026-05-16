@@ -109,6 +109,13 @@ export async function getVotes(debateId) {
   return res.data;
 }
 
+// ── Leaderboard ───────────────────────────────────────────────────────────
+
+export async function getLeaderboard() {
+  const res = await api.get("/leaderboard");
+  return res.data;
+}
+
 // ── Reactions ─────────────────────────────────────────────────────────────
 
 export async function submitReaction(debateId, side, roundName, reaction, sessionId) {
