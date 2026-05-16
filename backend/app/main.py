@@ -1,12 +1,9 @@
-import os
-
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
 from app.config import get_settings
 from app.database import create_tables
 from app.routers import (debate, export_pdf, factcheck, human_debate, reaction,
                          vote)
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Debate Engine API")
 
@@ -29,7 +26,6 @@ app.include_router(export_pdf.router, prefix="/api")
 
 @app.on_event("startup")
 def startup():
-    os.makedirs("./data", exist_ok=True)
     create_tables()
 
 

@@ -4,11 +4,21 @@ from sqlalchemy import (Column, DateTime, Integer, String, Text, create_engine,
                         func)
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-os.makedirs("./data", exist_ok=True)
+_DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./data/debates.db")
 
-engine = create_engine(
-    "sqlite:///./data/debates.db", connect_args={"check_same_thread": False}
-)
+# Neon (and some other providers) give a postgres:// URL; SQLAlchemy requires postgresql://
+if _DATABASE_URL.startswith("postgres://"):
+    _DATABASE_URL = _DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+_is_sqlite = _DATABASE_URL.startswith("sqlite")
+_engine_kwargs: dict = {"pool_pre_ping": True}
+if _is_sqlite:
+    import os as _os
+
+    _os.makedirs("./data", exist_ok=True)
+    _engine_kwargs["connect_args"] = {"check_same_thread": False}
+
+engine = create_engine(_DATABASE_URL, **_engine_kwargs)
 SessionLocal = sessionmaker(bind=engine)
 
 
