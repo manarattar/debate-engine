@@ -1,28 +1,7 @@
-from app.database import ArgumentReaction, Base, get_db
-from app.main import app
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-engine = create_engine(
-    "sqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-TestingSessionLocal = sessionmaker(bind=engine)
-Base.metadata.create_all(bind=engine)
+from app.main import app
 
-
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
 PAYLOAD = {
@@ -34,17 +13,7 @@ PAYLOAD = {
 }
 
 
-def _clear():
-    db = TestingSessionLocal()
-    db.query(ArgumentReaction).delete()
-    db.commit()
-    db.close()
-
-
 class TestSubmitReaction:
-    def setup_method(self):
-        _clear()
-
     def test_like_returns_ok(self):
         res = client.post("/api/reaction", json=PAYLOAD)
         assert res.status_code == 200
@@ -79,9 +48,6 @@ class TestSubmitReaction:
 
 
 class TestGetReactions:
-    def setup_method(self):
-        _clear()
-
     def test_empty_debate_returns_empty_reactions(self):
         res = client.get("/api/reaction/no_such_debate")
         assert res.status_code == 200

@@ -296,6 +296,15 @@ export default function App() {
               <span className="text-slate-400 text-sm">Debate complete</span>
               <div className="flex items-center gap-2">
                 {debateId && (
+                  <a
+                    href={`${import.meta.env.VITE_API_URL || ""}/api/debate/${debateId}/pdf`}
+                    download
+                    className="text-sm px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors"
+                  >
+                    ⬇ PDF
+                  </a>
+                )}
+                {debateId && (
                   <button
                     onClick={handleShare}
                     className="text-sm px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors"
