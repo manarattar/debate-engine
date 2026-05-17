@@ -28,6 +28,11 @@ async function* streamDebateFetch(topic, debateId, proPersona, conPersona, token
       con_persona: conPersona || null,
     }),
   });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}));
+    yield { type: "error", data: { message: detail.detail || `Server error ${res.status}` } };
+    return;
+  }
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
