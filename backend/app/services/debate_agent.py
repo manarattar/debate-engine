@@ -2,10 +2,11 @@ import asyncio
 import json
 import re
 import threading
+import time
 
 from app.config import get_settings
 from app.schemas import Argument, Citation, Side
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 
 settings = get_settings()
 
@@ -14,8 +15,19 @@ def _make_client() -> OpenAI:
     return OpenAI(
         api_key=settings.openai_api_key,
         base_url=settings.openai_base_url,
-        timeout=30.0,
+        timeout=60.0,
     )
+
+
+def _call_with_retry(fn, max_retries: int = 4):
+    """Call fn() retrying on RateLimitError with exponential backoff (1s, 2s, 4s, 8s)."""
+    for attempt in range(max_retries):
+        try:
+            return fn()
+        except RateLimitError:
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(2**attempt)
 
 
 MAX_CONTEXT_CHARS = 1200
@@ -197,17 +209,21 @@ async def generate_argument_streaming(
 
     def _stream():
         try:
-            client = _make_client()
-            response = client.chat.completions.create(
-                model=settings.model_name,
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0.7,
-                max_tokens=token_limit,
-                stream=True,
-            )
+
+            def _call():
+                client = _make_client()
+                return client.chat.completions.create(
+                    model=settings.model_name,
+                    messages=[
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    temperature=0.7,
+                    max_tokens=token_limit,
+                    stream=True,
+                )
+
+            response = _call_with_retry(_call)
             for chunk in response:
                 delta = chunk.choices[0].delta.content
                 if delta:
@@ -241,13 +257,15 @@ async def generate_argument_streaming(
 
 def generate_search_queries(topic: str) -> dict:
     """Return LLM-generated {"pro_queries": [...], "con_queries": [...]} for a debate topic."""
-    client = _make_client()
-    response = client.chat.completions.create(
-        model=settings.model_name,
-        messages=[
-            {
-                "role": "user",
-                "content": f"""Generate search queries to find strong arguments for a debate on: "{topic}"
+
+    def _call():
+        client = _make_client()
+        return client.chat.completions.create(
+            model=settings.model_name,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""Generate search queries to find strong arguments for a debate on: "{topic}"
 
 Return ONLY valid JSON with this structure:
 {{
@@ -256,11 +274,13 @@ Return ONLY valid JSON with this structure:
 }}
 
 Make queries specific and likely to find strong evidence-backed arguments.""",
-            }
-        ],
-        temperature=0.3,
-        max_tokens=300,
-    )
+                }
+            ],
+            temperature=0.3,
+            max_tokens=300,
+        )
+
+    response = _call_with_retry(_call)
     text = response.choices[0].message.content.strip()
     text = re.sub(r"```(?:json)?", "", text).strip().strip("`")
     try:
@@ -315,16 +335,22 @@ def score_arguments(topic: str, pro_args: list, con_args: list) -> dict:
         'Example: {"pro_opening": 8, "con_opening": 6}'
     )
 
-    client = _make_client()
-    response = client.chat.completions.create(
-        model=settings.model_name,
-        messages=[
-            {"role": "system", "content": SCORE_SYSTEM},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=0.2,
-        max_tokens=200,
-    )
+    def _call():
+        client = _make_client()
+        return client.chat.completions.create(
+            model=settings.model_name,
+            messages=[
+                {"role": "system", "content": SCORE_SYSTEM},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.2,
+            max_tokens=200,
+        )
+
+    try:
+        response = _call_with_retry(_call)
+    except Exception:
+        return {}
     text = response.choices[0].message.content.strip()
     text = re.sub(r"```(?:json)?", "", text).strip().strip("`")
     try:

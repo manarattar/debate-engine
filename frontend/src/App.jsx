@@ -74,6 +74,11 @@ export default function App() {
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
 
+  // Wake the Render backend on mount (free tier spins down after inactivity)
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || ""}/api/health`).catch(() => {});
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sharedId = params.get("debate");
