@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth, useUser, SignInButton, UserButton } from "@clerk/clerk-react";
 import TopicInput from "./components/TopicInput";
 import DebateArena from "./components/DebateArena";
 import HumanDebatePage from "./components/HumanDebatePage";
@@ -12,11 +13,14 @@ function generateDebateId() {
   return crypto.randomUUID().replace(/-/g, "").slice(0, 8);
 }
 
-async function* streamDebateFetch(topic, debateId, proPersona, conPersona) {
+async function* streamDebateFetch(topic, debateId, proPersona, conPersona, token) {
   const base = import.meta.env.VITE_API_URL || "";
   const res = await fetch(`${base}/api/debate`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({
       topic,
       debate_id: debateId,
@@ -45,6 +49,8 @@ async function* streamDebateFetch(topic, debateId, proPersona, conPersona) {
 }
 
 export default function App() {
+  const { isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
   const [debateMode, setDebateMode] = useState("ai"); // "ai" | "human"
   const [phase, setPhase] = useState("idle");
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -95,6 +101,7 @@ export default function App() {
   };
 
   const handleSubmit = (newTopic, pro = null, con = null) => {
+    if (!isSignedIn) return; // TopicInput shows sign-in button instead
     setTopic(newTopic);
     if (debateMode === "human") {
       setPhase("human");
@@ -118,7 +125,8 @@ export default function App() {
   const handleStartDebate = async (topicToDebate) => {
     setPhase("debating");
     try {
-      for await (const msg of streamDebateFetch(topicToDebate, debateId, proPersona, conPersona)) {
+      const token = await getToken();
+      for await (const msg of streamDebateFetch(topicToDebate, debateId, proPersona, conPersona, token)) {
         if (msg.type === "status") {
           setStatus(msg.data);
         } else if (msg.type === "sources_ready") {
@@ -225,15 +233,33 @@ export default function App() {
       />
 
       <div className="flex-1 flex flex-col">
-        {/* Mobile top bar — hamburger + title */}
-        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-slate-800">
-          <button
-            onClick={() => setHistoryOpen(true)}
-            className="text-slate-400 hover:text-white text-xl leading-none"
-          >
-            ☰
-          </button>
-          <span className="text-slate-500 text-sm font-medium">Debate Engine</span>
+        {/* Top bar — hamburger (mobile) + auth */}
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setHistoryOpen(true)}
+              className="md:hidden text-slate-400 hover:text-white text-xl leading-none"
+            >
+              ☰
+            </button>
+            <span className="text-slate-500 text-sm font-medium md:hidden">Debate Engine</span>
+          </div>
+          <div className="flex items-center gap-3 ml-auto">
+            {isSignedIn ? (
+              <>
+                <span className="text-slate-500 text-xs hidden md:block">
+                  {user?.primaryEmailAddress?.emailAddress}
+                </span>
+                <UserButton afterSignOutUrl="/" />
+              </>
+            ) : (
+              <SignInButton mode="modal">
+                <button className="text-xs px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-colors font-medium">
+                  Sign in
+                </button>
+              </SignInButton>
+            )}
+          </div>
         </div>
         {phase === "idle" && (
           <div className="flex flex-col items-center">

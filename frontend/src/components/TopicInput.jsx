@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth, SignInButton } from "@clerk/clerk-react";
 import PersonaPicker from "./PersonaPicker";
 
 const TOPIC_CATEGORIES = [
@@ -37,6 +38,7 @@ const TOPIC_CATEGORIES = [
 ];
 
 export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
+  const { isSignedIn } = useAuth();
   const [topic, setTopic] = useState("");
   const [personas, setPersonas] = useState({ pro: "", con: "" });
   const [showPersonas, setShowPersonas] = useState(false);
@@ -75,19 +77,30 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
             placeholder-slate-500 text-lg resize-none focus:outline-none focus:border-violet-500
             disabled:opacity-50 transition-colors"
         />
-        <button
-          type="submit"
-          disabled={!topic.trim() || isLoading}
-          className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-slate-700
-            disabled:text-slate-500 text-white font-semibold py-4 rounded-xl text-lg
-            transition-colors flex items-center justify-center gap-2"
-        >
-          {isLoading ? (
-            <><span className="animate-spin">⟳</span> Running debate...</>
-          ) : (
-            submitLabel || "⚔️ Start Debate"
-          )}
-        </button>
+        {isSignedIn ? (
+          <button
+            type="submit"
+            disabled={!topic.trim() || isLoading}
+            className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-slate-700
+              disabled:text-slate-500 text-white font-semibold py-4 rounded-xl text-lg
+              transition-colors flex items-center justify-center gap-2"
+          >
+            {isLoading ? (
+              <><span className="animate-spin">⟳</span> Running debate...</>
+            ) : (
+              submitLabel || "⚔️ Start Debate"
+            )}
+          </button>
+        ) : (
+          <SignInButton mode="modal">
+            <button
+              type="button"
+              className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-4 rounded-xl text-lg transition-colors"
+            >
+              Sign in to start a debate
+            </button>
+          </SignInButton>
+        )}
       </form>
 
       {/* Persona toggle */}

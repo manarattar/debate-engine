@@ -94,13 +94,12 @@ export function streamHumanRebuttal(sessionId, content) {
 
 // ── Voting ────────────────────────────────────────────────────────────────
 
-export async function submitVote(debateId, phase, side, sessionId) {
-  const res = await api.post("/vote", {
-    debate_id: debateId,
-    phase,
-    side,
-    session_id: sessionId,
-  });
+export async function submitVote(debateId, phase, side, sessionId, token) {
+  const res = await api.post(
+    "/vote",
+    { debate_id: debateId, phase, side, session_id: sessionId },
+    token ? { headers: { Authorization: `Bearer ${token}` } } : {},
+  );
   return res.data;
 }
 
@@ -118,14 +117,12 @@ export async function getLeaderboard() {
 
 // ── Reactions ─────────────────────────────────────────────────────────────
 
-export async function submitReaction(debateId, side, roundName, reaction, sessionId) {
-  const res = await api.post("/reaction", {
-    debate_id: debateId,
-    side,
-    round_name: roundName,
-    reaction,
-    session_id: sessionId,
-  });
+export async function submitReaction(debateId, side, roundName, reaction, sessionId, token) {
+  const res = await api.post(
+    "/reaction",
+    { debate_id: debateId, side, round_name: roundName, reaction, session_id: sessionId },
+    token ? { headers: { Authorization: `Bearer ${token}` } } : {},
+  );
   return res.data;
 }
 

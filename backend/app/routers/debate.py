@@ -1,20 +1,24 @@
 import json
 import uuid
 
+from app.database import ArgumentReaction, Debate, Vote, get_db
+from app.dependencies.auth import get_current_user
+from app.schemas import DebateRequest
+from app.services.debate_orchestrator import run_debate
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.database import ArgumentReaction, Debate, Vote, get_db
-from app.schemas import DebateRequest
-from app.services.debate_orchestrator import run_debate
-
 router = APIRouter()
 
 
 @router.post("/debate")
-async def start_debate(request: DebateRequest, db: Session = Depends(get_db)):
+async def start_debate(
+    request: DebateRequest,
+    db: Session = Depends(get_db),
+    _user_id: str = Depends(get_current_user),
+):
     debate_id = request.debate_id or str(uuid.uuid4())[:8]
     db_debate = Debate(id=debate_id, topic=request.topic, status="processing")
     db.add(db_debate)

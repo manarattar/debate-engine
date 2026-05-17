@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth, SignInButton } from "@clerk/clerk-react";
 import { submitReaction } from "../api";
 
 const SIDE_STYLES = {
@@ -57,16 +58,26 @@ function ScoreBadge({ score }) {
 }
 
 function ReactionButtons({ debateId, side, round_name, initialReactions }) {
+  const { isSignedIn, getToken } = useAuth();
   const [myReaction, setMyReaction] = useState(null);
   const [likes, setLikes] = useState(initialReactions?.likes ?? 0);
   const [dislikes, setDislikes] = useState(initialReactions?.dislikes ?? 0);
+
+  if (!isSignedIn) {
+    return (
+      <SignInButton mode="modal">
+        <button className="text-xs text-slate-600 hover:text-slate-400 transition-colors pt-1">
+          Sign in to react
+        </button>
+      </SignInButton>
+    );
+  }
 
   const handleReact = async (reaction) => {
     const sessionId = getSessionId();
     const prev = myReaction;
     const isToggleOff = prev === reaction;
 
-    // Optimistic update
     if (isToggleOff) {
       setMyReaction(null);
       reaction === "like" ? setLikes((n) => n - 1) : setDislikes((n) => n - 1);
@@ -78,9 +89,9 @@ function ReactionButtons({ debateId, side, round_name, initialReactions }) {
     }
 
     try {
-      await submitReaction(debateId, side, round_name, reaction, sessionId);
+      const token = await getToken();
+      await submitReaction(debateId, side, round_name, reaction, sessionId, token);
     } catch {
-      // Revert on error
       setMyReaction(prev);
       setLikes(initialReactions?.likes ?? 0);
       setDislikes(initialReactions?.dislikes ?? 0);

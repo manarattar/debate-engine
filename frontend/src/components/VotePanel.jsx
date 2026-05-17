@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth, SignInButton } from "@clerk/clerk-react";
 import { getVotes, submitVote } from "../api";
 
 function getSessionId() {
@@ -36,6 +37,7 @@ function TallyBar({ pro, con, total, label }) {
 }
 
 export default function VotePanel({ debateId, phase, topic }) {
+  const { isSignedIn, getToken } = useAuth();
   const [voted, setVoted] = useState(false);
   const [tally, setTally] = useState(null);
   const [error, setError] = useState(null);
@@ -47,7 +49,8 @@ export default function VotePanel({ debateId, phase, topic }) {
 
   const handleVote = async (side) => {
     try {
-      await submitVote(debateId, phase, side, getSessionId());
+      const token = await getToken();
+      await submitVote(debateId, phase, side, getSessionId(), token);
       setVoted(true);
     } catch (err) {
       if (err?.response?.status === 409) {
@@ -67,6 +70,13 @@ export default function VotePanel({ debateId, phase, topic }) {
       </p>
 
       {!voted ? (
+        !isSignedIn ? (
+          <SignInButton mode="modal">
+            <button className="w-full py-2 rounded-lg border border-violet-500/40 text-violet-400 text-sm font-medium hover:bg-violet-900/30 transition-colors">
+              Sign in to vote
+            </button>
+          </SignInButton>
+        ) : (
         <div className="flex gap-3 justify-center">
           <button
             onClick={() => handleVote("pro")}
@@ -81,6 +91,7 @@ export default function VotePanel({ debateId, phase, topic }) {
             ✗ CON
           </button>
         </div>
+        )
       ) : phaseTally ? (
         <TallyBar
           pro={phaseTally.pro}

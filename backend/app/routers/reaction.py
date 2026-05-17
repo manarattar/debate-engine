@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from app.database import ArgumentReaction, get_db
+from app.dependencies.auth import get_current_user
 from app.schemas import ArgumentReactionTally, ReactionRequest, ReactionResult
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -9,7 +10,11 @@ router = APIRouter()
 
 
 @router.post("/reaction", status_code=200)
-def submit_reaction(req: ReactionRequest, db: Session = Depends(get_db)):
+async def submit_reaction(
+    req: ReactionRequest,
+    db: Session = Depends(get_db),
+    _user_id: str = Depends(get_current_user),
+):
     existing = (
         db.query(ArgumentReaction)
         .filter_by(
