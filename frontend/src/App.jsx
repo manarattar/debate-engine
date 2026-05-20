@@ -6,6 +6,8 @@ import HumanDebatePage from "./components/HumanDebatePage";
 import HistoryPanel from "./components/HistoryPanel";
 import FactCheckPanel from "./components/FactCheckPanel";
 import VotePanel from "./components/VotePanel";
+import DebateKnowledgeGraph from "./components/DebateKnowledgeGraph";
+import DebateDrawer from "./components/DebateDrawer";
 import { getDebate, getReactions } from "./api";
 import "./index.css";
 
@@ -59,6 +61,7 @@ export default function App() {
   const [debateMode, setDebateMode] = useState("ai"); // "ai" | "human"
   const [phase, setPhase] = useState("idle");
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [drawerDebateId, setDrawerDebateId] = useState(null);
   const [topic, setTopic] = useState("");
   const [debateId, setDebateId] = useState(null);
   const [pendingVoteTopic, setPendingVoteTopic] = useState(null);
@@ -215,6 +218,25 @@ export default function App() {
     setPhase("prevote");
   };
 
+  const handleDrawerViewFull = (data) => {
+    setDrawerDebateId(null);
+    const allArgs = [
+      ...(data.pro_arguments || []),
+      ...(data.con_arguments || []),
+    ].sort((a, b) => {
+      const order = { opening: 0, rebuttal: 1, closing: 2 };
+      return (order[a.round_name] ?? 9) - (order[b.round_name] ?? 9);
+    });
+    setTopic(data.topic);
+    setDebateId(data.debate_id);
+    setEvents(allArgs);
+    setVerdict(data.verdict || null);
+    setWinner(data.winner || null);
+    setStreaming(null);
+    setStatus(null);
+    setPhase("complete");
+  };
+
   const handleReset = () => {
     setPhase("idle");
     setDebateMode("ai");
@@ -295,6 +317,7 @@ export default function App() {
               isLoading={false}
               submitLabel={debateMode === "human" ? "🧑 Choose My Side →" : undefined}
             />
+            <DebateKnowledgeGraph onDebateSelect={(id) => setDrawerDebateId(id)} />
           </div>
         )}
 
@@ -432,6 +455,12 @@ export default function App() {
           </div>
         )}
       </div>
+
+      <DebateDrawer
+        debateId={drawerDebateId}
+        onClose={() => setDrawerDebateId(null)}
+        onViewFull={handleDrawerViewFull}
+      />
     </div>
   );
 }

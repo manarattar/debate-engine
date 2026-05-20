@@ -137,3 +137,10 @@ export async function runFactCheck(debateId) {
   const res = await api.post(`/factcheck/${debateId}`);
   return res.data;
 }
+
+// ── Knowledge graph ───────────────────────────────────────────────────────
+
+export async function getGraphData() {
+  const res = await api.get("/graph");
+  return res.data;
+}

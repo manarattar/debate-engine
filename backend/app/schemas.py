@@ -173,3 +173,24 @@ class FactCheckReport(BaseModel):
     topic: str
     claims: list[FactCheckClaim]
     checked_at: str
+
+
+class GraphNode(BaseModel):
+    id: str
+    label: str
+    type: str  # "domain" | "topic"
+    domain: str
+    debate_id: Optional[str] = None
+    view_count: int = 0
+
+
+class GraphLink(BaseModel):
+    source: str
+    target: str
+
+
+class GraphData(BaseModel):
+    nodes: list[GraphNode]
+    links: list[GraphLink]
+    debate_count: int
+    domain_count: int
