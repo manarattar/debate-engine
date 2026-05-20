@@ -2,6 +2,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ForceGraph2D from "react-force-graph-2d";
 import { getGraphData } from "../api";
 
+function buildDomainDegree(links) {
+  const counts = {};
+  for (const link of links) {
+    const src = typeof link.source === "object" ? link.source.id : link.source;
+    counts[src] = (counts[src] || 0) + 1;
+  }
+  return counts;
+}
+
 const DOMAIN_COLORS = {
   Technology: "#7c3aed",
   Politics: "#d97706",
@@ -10,15 +19,26 @@ const DOMAIN_COLORS = {
   Business: "#0891b2",
   "Energy & Climate": "#ea580c",
   "Arts & Media": "#db2777",
-  General: "#64748b",
+  Sports: "#16a34a",
+  "Philosophy & Ethics": "#9333ea",
+  Science: "#0e7490",
 };
 
-function getColor(domain) {
-  return DOMAIN_COLORS[domain] ?? DOMAIN_COLORS.General;
-}
+// Palette for dynamically discovered domains
+const DYNAMIC_PALETTE = [
+  "#b45309", "#be185d", "#1d4ed8", "#065f46", "#7e22ce",
+  "#b91c1c", "#0369a1", "#15803d", "#c2410c", "#6d28d9",
+];
 
 function domainOffset(domain) {
   return domain.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+}
+
+function getColor(domain) {
+  if (DOMAIN_COLORS[domain]) return DOMAIN_COLORS[domain];
+  // Deterministic color for dynamically discovered domains
+  const idx = domainOffset(domain) % DYNAMIC_PALETTE.length;
+  return DYNAMIC_PALETTE[idx];
 }
 
 function useGraphWidth() {
@@ -35,6 +55,7 @@ function useGraphWidth() {
 
 export default function DebateKnowledgeGraph({ onDebateSelect }) {
   const [graphData, setGraphData] = useState(null);
+  const [domainDegree, setDomainDegree] = useState({});
   const [hoveredNode, setHoveredNode] = useState(null);
   const [visible, setVisible] = useState(false);
   const graphRef = useRef();
@@ -44,6 +65,8 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
   useEffect(() => {
     getGraphData()
       .then((data) => {
+        // Compute degree before ForceGraph mutates link objects in-place
+        setDomainDegree(buildDomainDegree(data.links));
         setGraphData(data);
         requestAnimationFrame(() => setVisible(true));
       })
@@ -66,8 +89,10 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
       const t = Date.now() / 1000;
 
       if (node.type === "domain") {
+        const degree = domainDegree[node.id] ?? 1;
+        const baseR = 10 + Math.min(degree * 2.5, 18); // 10 (1 debate) → 28 (many)
         const pulse = 1 + 0.1 * Math.sin(t * 1.6 + domainOffset(node.domain));
-        const r = 18 * pulse;
+        const r = baseR * pulse;
 
         // Filled circle
         ctx.beginPath();
@@ -163,8 +188,8 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
   );
 
   const nodeVal = useCallback(
-    (n) => (n.type === "domain" ? 40 : 3),
-    []
+    (n) => n.type === "domain" ? 15 + (domainDegree[n.id] ?? 1) * 4 : 3,
+    [domainDegree]
   );
 
   const data = graphData ?? { nodes: [], links: [] };

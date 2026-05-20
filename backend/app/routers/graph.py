@@ -22,19 +22,20 @@ def get_graph(db: Session = Depends(get_db)):
     links: list[GraphLink] = []
 
     for d in debates:
-        domain = classify_topic(d.topic)
-        domain_set.add(domain)
+        primary_domain, all_domains = classify_topic(d.topic)
+        for domain in all_domains:
+            domain_set.add(domain)
+            links.append(GraphLink(source=f"domain_{domain}", target=f"topic_{d.id}"))
         topic_nodes.append(
             GraphNode(
                 id=f"topic_{d.id}",
                 label=d.topic,
                 type="topic",
-                domain=domain,
+                domain=primary_domain,
                 debate_id=d.id,
                 view_count=d.view_count or 0,
             )
         )
-        links.append(GraphLink(source=f"domain_{domain}", target=f"topic_{d.id}"))
 
     domain_nodes = [
         GraphNode(id=f"domain_{domain}", label=domain, type="domain", domain=domain)
