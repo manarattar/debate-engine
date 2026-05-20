@@ -17,6 +17,10 @@ function getColor(domain) {
   return DOMAIN_COLORS[domain] ?? DOMAIN_COLORS.General;
 }
 
+function domainOffset(domain) {
+  return domain.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+}
+
 function useGraphWidth() {
   const [width, setWidth] = useState(() =>
     Math.min(window.innerWidth - 320, 900)
@@ -62,54 +66,67 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
       const t = Date.now() / 1000;
 
       if (node.type === "domain") {
-        const pulse = 1 + 0.12 * Math.sin(t * 1.8 + (node.__indexColor ?? 0));
-        const r = 20 * pulse;
+        const pulse = 1 + 0.1 * Math.sin(t * 1.6 + domainOffset(node.domain));
+        const r = 18 * pulse;
 
-        // Outer glow
-        ctx.save();
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 22;
+        // Filled circle
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
-        ctx.fillStyle = color + "cc";
+        ctx.fillStyle = color;
         ctx.fill();
-        ctx.restore();
 
-        // Label below
-        ctx.font = "bold 5px Inter, sans-serif";
+        // Subtle white ring
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Label inside the circle
+        ctx.font = "bold 4.5px sans-serif";
         ctx.textAlign = "center";
-        ctx.textBaseline = "top";
+        ctx.textBaseline = "middle";
         ctx.fillStyle = "#ffffff";
-        ctx.fillText(node.label, node.x, node.y + r + 3);
+        ctx.fillText(node.label, node.x, node.y);
       } else {
         const isHovered = hoveredNode?.id === node.id;
         const r = isHovered ? 7 : 5;
 
+        // Node dot — colored by domain
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
-        ctx.fillStyle = isHovered ? "#ffffff" : "#94a3b8";
+        ctx.fillStyle = isHovered ? "#ffffff" : color + "bb";
         ctx.fill();
 
+        // Always-visible short label below the node
+        const short =
+          (node.label ?? "").length > 24
+            ? node.label.slice(0, 24) + "…"
+            : (node.label ?? "");
+        ctx.font = `${isHovered ? "bold " : ""}3.5px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = isHovered ? "#e2e8f0" : "#64748b";
+        ctx.fillText(short, node.x, node.y + r + 2);
+
+        // Full label tooltip above on hover
         if (isHovered) {
-          const raw = node.label ?? "";
-          const label = raw.length > 45 ? raw.slice(0, 45) + "…" : raw;
+          const full =
+            (node.label ?? "").length > 50
+              ? node.label.slice(0, 50) + "…"
+              : (node.label ?? "");
           const pad = 4;
-          ctx.font = "4px Inter, sans-serif";
-          const tw = ctx.measureText(label).width;
+          ctx.font = "4px sans-serif";
+          const tw = ctx.measureText(full).width;
           const bx = node.x - tw / 2 - pad;
-          const by = node.y - 20;
+          const by = node.y - 22;
           const bw = tw + pad * 2;
           const bh = 12;
 
-          ctx.fillStyle = "#1e1b4bdd";
-          ctx.beginPath();
-          ctx.roundRect(bx, by, bw, bh, 2);
-          ctx.fill();
+          ctx.fillStyle = "#1e1b4b";
+          ctx.fillRect(bx, by, bw, bh);
 
           ctx.fillStyle = "#e2e8f0";
-          ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.fillText(label, node.x, by + bh / 2);
+          ctx.fillText(full, node.x, by + bh / 2);
         }
       }
     },
