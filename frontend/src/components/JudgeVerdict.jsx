@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
 const WINNER_STYLES = {
-  pro: { label: "PRO WINS", color: "text-sky-400", border: "border-sky-500/40", bg: "bg-sky-900/10" },
-  con: { label: "CON WINS", color: "text-rose-400", border: "border-rose-500/40", bg: "bg-rose-900/10" },
-  tie: { label: "TIE", color: "text-yellow-400", border: "border-yellow-500/40", bg: "bg-yellow-900/10" },
+  pro: { label: "THE MOTION IS UPHELD", color: "text-sky-400", border: "border-sky-500/30", bg: "" },
+  con: { label: "THE MOTION FAILS", color: "text-rose-400", border: "border-rose-500/30", bg: "" },
+  tie: { label: "THE MATTER IS UNRESOLVED", color: "text-amber-400", border: "border-amber-500/30", bg: "" },
 };
 
 export default function JudgeVerdict({ verdict, winner, streaming = false }) {
@@ -21,12 +21,12 @@ export default function JudgeVerdict({ verdict, winner, streaming = false }) {
   const style = WINNER_STYLES[winner] || WINNER_STYLES.tie;
 
   return (
-    <div className={`border-2 ${style.border} ${style.bg} rounded-2xl p-6 shadow-lg transition-all duration-500`}>
+    <div className={`border-t-2 border-b ${style.border} border-x-0 py-6 argument-judge transition-all duration-500`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">⚖️</span>
+          <span className="text-slate-500 text-lg">⚖</span>
           <div>
-            <p className="text-slate-400 text-xs uppercase tracking-widest">Judge's Verdict</p>
+            <p className="text-slate-500 text-xs uppercase tracking-widest font-mono">Ruling of the Tribunal</p>
             {/* Winner banner — slides in after streaming ends */}
             <div
               className={`transition-all duration-700 ease-out overflow-hidden ${

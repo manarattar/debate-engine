@@ -4,32 +4,40 @@ import { submitReaction } from "../api";
 
 const SIDE_STYLES = {
   pro: {
-    border: "border-sky-500/30",
-    bg: "bg-sky-950/20",
-    badge: "bg-sky-500/20 text-sky-400 border border-sky-500/30",
-    label: "PRO",
-    icon: "✓",
-    citationBg: "bg-sky-900/30 border-sky-700/30",
+    accent: "border-l-4 border-sky-500",
+    labelColor: "text-sky-400",
+    label: "PROPOSITION",
+    citationBg: "bg-sky-900/20 border-sky-800/30",
+    animClass: "argument-pro",
+    reactionLike: "bg-sky-900/50 border-sky-500/50 text-sky-400",
+    reactionDislike: "bg-rose-900/50 border-rose-500/50 text-rose-400",
   },
   con: {
-    border: "border-rose-500/30",
-    bg: "bg-rose-950/20",
-    badge: "bg-rose-500/20 text-rose-400 border border-rose-500/30",
-    label: "CON",
-    icon: "✗",
-    citationBg: "bg-rose-900/30 border-rose-700/30",
+    accent: "border-l-4 border-rose-500",
+    labelColor: "text-rose-400",
+    label: "OPPOSITION",
+    citationBg: "bg-rose-900/20 border-rose-800/30",
+    animClass: "argument-con",
+    reactionLike: "bg-sky-900/50 border-sky-500/50 text-sky-400",
+    reactionDislike: "bg-rose-900/50 border-rose-500/50 text-rose-400",
   },
 };
 
 const ROUND_LABELS = {
   opening: "Opening Statement",
   rebuttal: "Rebuttal",
-  cross_pro_questions: "Cross-Examination Questions",
-  cross_con_answers: "Cross-Examination Answers",
-  cross_con_questions: "Cross-Examination Questions",
-  cross_pro_answers: "Cross-Examination Answers",
+  cross_pro_questions: "Cross-Examination",
+  cross_con_answers: "Cross-Examination Response",
+  cross_con_questions: "Cross-Examination",
+  cross_pro_answers: "Cross-Examination Response",
   closing: "Closing Statement",
-  verdict: "Judge's Verdict",
+  verdict: "Ruling",
+};
+
+const ROUND_NUMERALS = {
+  opening: "I",
+  rebuttal: "II",
+  closing: "III",
 };
 
 const SCOREABLE_ROUNDS = new Set(["opening", "rebuttal", "closing"]);
@@ -46,18 +54,18 @@ function getSessionId() {
 function ScoreBadge({ score }) {
   const color =
     score >= 8
-      ? "text-sky-400 border-sky-500/40 bg-sky-900/30"
+      ? "text-sky-400 border-sky-500/40"
       : score >= 5
-        ? "text-yellow-400 border-yellow-500/40 bg-yellow-900/20"
-        : "text-rose-400 border-rose-500/40 bg-rose-900/20";
+        ? "text-amber-400 border-amber-500/40"
+        : "text-rose-400 border-rose-500/40";
   return (
-    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${color}`}>
+    <span className={`text-xs font-mono px-2 py-0.5 rounded border ${color}`}>
       {score}/10
     </span>
   );
 }
 
-function ReactionButtons({ debateId, side, round_name, initialReactions }) {
+function ReactionButtons({ debateId, side, round_name, initialReactions, styles }) {
   const { isSignedIn, getToken } = useAuth();
   const [myReaction, setMyReaction] = useState(null);
   const [likes, setLikes] = useState(initialReactions?.likes ?? 0);
@@ -102,18 +110,18 @@ function ReactionButtons({ debateId, side, round_name, initialReactions }) {
     <div className="flex items-center gap-2 pt-1">
       <button
         onClick={() => handleReact("like")}
-        className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-colors
+        className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded border transition-colors
           ${myReaction === "like"
-            ? "bg-sky-900/50 border-sky-500/50 text-sky-400"
+            ? styles.reactionLike
             : "border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500"}`}
       >
         👍 {likes > 0 && <span>{likes}</span>}
       </button>
       <button
         onClick={() => handleReact("dislike")}
-        className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-colors
+        className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded border transition-colors
           ${myReaction === "dislike"
-            ? "bg-rose-900/50 border-rose-500/50 text-rose-400"
+            ? styles.reactionDislike
             : "border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500"}`}
       >
         👎 {dislikes > 0 && <span>{dislikes}</span>}
@@ -136,21 +144,27 @@ export default function ArgumentCard({
   const styles = SIDE_STYLES[side] || SIDE_STYLES.pro;
   const reactionKey = `${side}_${round_name}`;
   const showReactions = debateId && !streaming && SCOREABLE_ROUNDS.has(round_name);
+  const numeral = ROUND_NUMERALS[round_name];
 
   return (
-    <div className={`border ${styles.border} ${styles.bg} rounded-xl p-5 flex flex-col gap-3`}>
+    <div className={`${styles.accent} ${streaming ? "" : styles.animClass} pl-5 pr-4 py-4 flex flex-col gap-3`}>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${styles.badge}`}>
-            {styles.icon} {styles.label}
+        <div className="flex items-center gap-3">
+          <span className={`text-xs font-bold uppercase tracking-widest ${styles.labelColor}`}>
+            {styles.label}
           </span>
-          <span className="text-slate-400 text-sm">{ROUND_LABELS[round_name] || round_name}</span>
+          {numeral && (
+            <span className="text-slate-600 text-xs font-mono">— {numeral}</span>
+          )}
+          <span className="text-slate-500 text-xs tracking-wide">
+            {ROUND_LABELS[round_name] || round_name}
+          </span>
           {score !== undefined && <ScoreBadge score={score} />}
         </div>
         {citations.length > 0 && (
           <button
             onClick={() => setShowCitations(!showCitations)}
-            className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-xs text-slate-600 hover:text-slate-400 transition-colors tabular-nums"
           >
             {citations.length} source{citations.length !== 1 ? "s" : ""} {showCitations ? "▲" : "▼"}
           </button>
@@ -168,21 +182,22 @@ export default function ArgumentCard({
           side={side}
           round_name={round_name}
           initialReactions={reactions?.[reactionKey]}
+          styles={styles}
         />
       )}
 
       {showCitations && citations.length > 0 && (
-        <div className={`border ${styles.citationBg} rounded-lg p-3 flex flex-col gap-2`}>
+        <div className={`border-l-2 ${styles.accent.split(" ")[1]} pl-3 flex flex-col gap-2 ml-1`}>
           <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Sources</p>
           {citations.map((c, i) => (
             <div key={i} className="flex gap-2 text-xs">
-              <span className="text-slate-500 font-mono shrink-0">[{c.index}]</span>
+              <span className="text-slate-600 font-mono shrink-0">[{c.index}]</span>
               <div>
                 <a
                   href={c.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 underline block truncate max-w-xs"
+                  className="text-amber-400 hover:text-amber-300 underline block truncate max-w-xs"
                 >
                   {c.title || c.url}
                 </a>

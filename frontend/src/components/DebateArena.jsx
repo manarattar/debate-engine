@@ -99,9 +99,14 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
     <div className="w-full max-w-5xl mx-auto px-4 pb-16">
       {/* Topic banner */}
       <div className="text-center mb-8 pt-6">
-        <div className="inline-block bg-slate-800 border border-slate-600 rounded-2xl px-6 py-3">
-          <p className="text-slate-400 text-sm mb-1">Debating</p>
-          <h2 className="text-white text-xl font-semibold">"{topic}"</h2>
+        <p className="text-slate-600 text-xs uppercase tracking-widest mb-2">Motion Before the Tribunal</p>
+        <h2 className="text-white text-xl font-semibold max-w-2xl mx-auto leading-snug">
+          "{topic}"
+        </h2>
+        <div className="mt-3 flex justify-center gap-2 items-center">
+          <div className="h-px w-12 bg-slate-700" />
+          <span className="text-slate-700 text-xs font-mono">⚖</span>
+          <div className="h-px w-12 bg-slate-700" />
         </div>
       </div>
 
@@ -113,11 +118,12 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
       {/* Source count badges */}
       {status?.pro_count !== undefined && (
         <div className="flex justify-center gap-4 mb-6">
-          <span className="text-xs px-3 py-1 bg-sky-900/30 border border-sky-700/30 text-sky-400 rounded-full">
-            ✓ {status.pro_count} PRO source chunks
+          <span className="text-xs font-mono text-sky-400/70">
+            ✓ {status.pro_count} proposition sources
           </span>
-          <span className="text-xs px-3 py-1 bg-rose-900/30 border border-rose-700/30 text-rose-400 rounded-full">
-            ✗ {status.con_count} CON source chunks
+          <span className="text-xs text-slate-700">·</span>
+          <span className="text-xs font-mono text-rose-400/70">
+            ✗ {status.con_count} opposition sources
           </span>
         </div>
       )}
@@ -126,18 +132,18 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
       {roundsToShow.length > 0 && (
         <div className="hidden md:grid grid-cols-2 gap-4 mb-4">
           <div className="text-center">
-            <span className="text-sky-400 font-bold text-sm uppercase tracking-widest">⬆ PRO</span>
+            <span className="text-sky-400 font-bold text-xs uppercase tracking-widest">Counsel for the Proposition</span>
             {proPersona && (
-              <span className="ml-2 text-xs px-2 py-0.5 bg-sky-900/40 border border-sky-700/40 text-sky-300 rounded-full">
-                {proPersona}
+              <span className="ml-2 text-xs text-sky-500/70 font-mono">
+                ({proPersona})
               </span>
             )}
           </div>
           <div className="text-center">
-            <span className="text-rose-400 font-bold text-sm uppercase tracking-widest">CON ⬇</span>
+            <span className="text-rose-400 font-bold text-xs uppercase tracking-widest">Counsel for the Opposition</span>
             {conPersona && (
-              <span className="ml-2 text-xs px-2 py-0.5 bg-rose-900/40 border border-rose-700/40 text-rose-300 rounded-full">
-                {conPersona}
+              <span className="ml-2 text-xs text-rose-500/70 font-mono">
+                ({conPersona})
               </span>
             )}
           </div>

@@ -62,8 +62,8 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
   const [visible, setVisible] = useState(false);
   const graphRef = useRef();
   const rafRef = useRef();
-  const containerRef = useRef();
-  const width = useContainerWidth(containerRef);
+  const graphBoxRef = useRef();
+  const width = useContainerWidth(graphBoxRef);
 
   useEffect(() => {
     getGraphData()
@@ -199,7 +199,6 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
 
   return (
     <div
-      ref={containerRef}
       className="w-full flex flex-col items-center gap-4 py-8"
       style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease" }}
     >
@@ -232,6 +231,7 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
 
       {graphData && graphData.debate_count > 0 && (
         <div
+          ref={graphBoxRef}
           className="w-full rounded-2xl border border-slate-800 overflow-hidden"
           style={{ height: 460 }}
         >

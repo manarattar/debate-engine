@@ -72,32 +72,32 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
               handleSubmit(e);
             }
           }}
-          placeholder="Enter a debate topic..."
+          placeholder="State the motion..."
           disabled={isLoading}
           rows={3}
-          className="w-full bg-slate-800 border border-slate-600 rounded-xl px-5 py-4 text-white
-            placeholder-slate-500 text-lg resize-none focus:outline-none focus:border-amber-500
+          className="w-full bg-slate-900 border-l-4 border-l-amber-500/40 border border-slate-700 rounded-sm px-5 py-4 text-white
+            placeholder-slate-600 text-base resize-none focus:outline-none focus:border-amber-500
             disabled:opacity-50 transition-colors"
         />
         {isSignedIn ? (
           <button
             type="submit"
             disabled={!topic.trim() || isLoading}
-            className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700
-              disabled:text-slate-500 text-white font-semibold py-4 rounded-xl text-lg
-              transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-800
+              disabled:text-slate-600 text-white font-semibold py-4 rounded-sm text-base
+              uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
           >
             {isLoading ? (
-              <><span className="animate-spin">⟳</span> Running debate...</>
+              <><span className="animate-spin">⟳</span> Proceedings in progress...</>
             ) : (
-              submitLabel || "⚔️ Start Debate"
+              submitLabel || "⚖ Open Proceedings"
             )}
           </button>
         ) : (
           <SignInButton mode="modal">
             <button
               type="button"
-              className="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-4 rounded-xl text-lg transition-colors"
+              className="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-4 rounded-sm text-base uppercase tracking-widest transition-colors"
             >
               Sign in to start a debate
             </button>
@@ -132,8 +132,8 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
                   key={t}
                   onClick={() => setTopic(t)}
                   disabled={isLoading}
-                  className="text-sm px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border
-                    border-slate-600 rounded-full text-slate-300 transition-colors disabled:opacity-40"
+                  className="text-xs px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border
+                    border-slate-700 rounded-sm text-slate-400 hover:text-slate-200 transition-colors disabled:opacity-40"
                 >
                   {t}
                 </button>

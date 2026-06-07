@@ -1,17 +1,17 @@
 const STEPS = [
-  { key: 1, label: "Strategy" },
-  { key: 2, label: "Sources" },
-  { key: 3, label: "Openings" },
-  { key: 4, label: "Rebuttals" },
-  { key: 5, label: "Verdict" },
+  { key: 1, label: "I. Strategy" },
+  { key: 2, label: "II. Evidence" },
+  { key: 3, label: "III. Arguments" },
+  { key: 4, label: "IV. Rebuttal" },
+  { key: 5, label: "V. Ruling" },
 ];
 
 export default function StatusBar({ message, currentStep, totalSteps }) {
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
+    <div className="border-l-4 border-amber-500/40 bg-slate-900/60 pl-4 pr-4 py-3 mb-6">
       <div className="flex items-center gap-3 mb-3">
-        <span className="animate-spin text-amber-400 text-lg">⟳</span>
-        <span className="text-slate-300 text-sm">{message}</span>
+        <span className="text-amber-400 text-xs uppercase tracking-widest font-mono">Proceedings</span>
+        <span className="text-slate-400 text-sm">— {message}</span>
       </div>
       <div className="flex items-center gap-1">
         {STEPS.map((step) => (
