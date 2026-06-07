@@ -303,14 +303,14 @@ export default function App() {
                   className={`px-5 py-2 rounded-sm text-xs font-medium uppercase tracking-wide transition-colors
                     ${debateMode === "ai" ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
                 >
-                  ⚖ Watch Tribunal
+                  ⚖ Watch AI Debate
                 </button>
                 <button
                   onClick={() => setDebateMode("human")}
                   className={`px-5 py-2 rounded-sm text-xs font-medium uppercase tracking-wide transition-colors
                     ${debateMode === "human" ? "bg-amber-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
                 >
-                  🧑 Argue Your Case
+                  🧑 Debate the AI
                 </button>
               </div>
               <TopicInput
@@ -347,7 +347,7 @@ export default function App() {
         {phase === "debating" && (
           <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center px-6 py-3 border-b border-slate-800 shrink-0">
-              <span className="text-slate-500 text-xs uppercase tracking-widest font-mono">Proceedings in progress</span>
+              <span className="text-slate-500 text-xs uppercase tracking-widest font-mono">Debate in progress</span>
               <button onClick={handleReset} className="text-slate-500 hover:text-slate-300 text-sm transition-colors">
                 ✕ Cancel
               </button>
@@ -374,7 +374,7 @@ export default function App() {
         {phase === "complete" && (
           <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center px-6 py-3 border-b border-slate-800 shrink-0">
-              <span className="text-slate-500 text-xs uppercase tracking-widest font-mono">Proceedings complete</span>
+              <span className="text-slate-500 text-xs uppercase tracking-widest font-mono">Debate complete</span>
               <div className="flex items-center gap-2">
                 {debateId && (
                   <button
@@ -406,7 +406,7 @@ export default function App() {
                   onClick={handleReset}
                   className="text-sm px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-sm uppercase tracking-wide transition-colors"
                 >
-                  + New Proceeding
+                  + New Debate
                 </button>
               </div>
             </div>

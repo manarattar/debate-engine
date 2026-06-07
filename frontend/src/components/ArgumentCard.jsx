@@ -6,7 +6,7 @@ const SIDE_STYLES = {
   pro: {
     accent: "border-l-4 border-sky-500",
     labelColor: "text-sky-400",
-    label: "PROPOSITION",
+    label: "PRO",
     citationBg: "bg-sky-900/20 border-sky-800/30",
     animClass: "argument-pro",
     reactionLike: "bg-sky-900/50 border-sky-500/50 text-sky-400",
@@ -15,7 +15,7 @@ const SIDE_STYLES = {
   con: {
     accent: "border-l-4 border-rose-500",
     labelColor: "text-rose-400",
-    label: "OPPOSITION",
+    label: "CON",
     citationBg: "bg-rose-900/20 border-rose-800/30",
     animClass: "argument-con",
     reactionLike: "bg-sky-900/50 border-sky-500/50 text-sky-400",

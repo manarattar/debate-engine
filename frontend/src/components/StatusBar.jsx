@@ -10,7 +10,7 @@ export default function StatusBar({ message, currentStep, totalSteps }) {
   return (
     <div className="border-l-4 border-amber-500/40 bg-slate-900/60 pl-4 pr-4 py-3 mb-6">
       <div className="flex items-center gap-3 mb-3">
-        <span className="text-amber-400 text-xs uppercase tracking-widest font-mono">Proceedings</span>
+        <span className="text-amber-400 text-xs uppercase tracking-widest font-mono">Debate</span>
         <span className="text-slate-400 text-sm">— {message}</span>
       </div>
       <div className="flex items-center gap-1">

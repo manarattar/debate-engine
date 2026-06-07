@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
 const WINNER_STYLES = {
-  pro: { label: "THE MOTION IS UPHELD", color: "text-sky-400", border: "border-sky-500/30", bg: "" },
-  con: { label: "THE MOTION FAILS", color: "text-rose-400", border: "border-rose-500/30", bg: "" },
-  tie: { label: "THE MATTER IS UNRESOLVED", color: "text-amber-400", border: "border-amber-500/30", bg: "" },
+  pro: { label: "PRO WINS", color: "text-sky-400", border: "border-sky-500/30", bg: "" },
+  con: { label: "CON WINS", color: "text-rose-400", border: "border-rose-500/30", bg: "" },
+  tie: { label: "TIE", color: "text-amber-400", border: "border-amber-500/30", bg: "" },
 };
 
 export default function JudgeVerdict({ verdict, winner, streaming = false }) {
@@ -26,7 +26,7 @@ export default function JudgeVerdict({ verdict, winner, streaming = false }) {
         <div className="flex items-center gap-3">
           <span className="text-slate-500 text-lg">⚖</span>
           <div>
-            <p className="text-slate-500 text-xs uppercase tracking-widest font-mono">Ruling of the Tribunal</p>
+            <p className="text-slate-500 text-xs uppercase tracking-widest font-mono">Judge's Verdict</p>
             {/* Winner banner — slides in after streaming ends */}
             <div
               className={`transition-all duration-700 ease-out overflow-hidden ${

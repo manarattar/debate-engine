@@ -72,7 +72,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
               handleSubmit(e);
             }
           }}
-          placeholder="State the motion..."
+          placeholder="Enter a debate topic..."
           disabled={isLoading}
           rows={3}
           className="w-full bg-slate-900 border-l-4 border-l-amber-500/40 border border-slate-700 rounded-sm px-5 py-4 text-white
@@ -88,9 +88,9 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
               uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
           >
             {isLoading ? (
-              <><span className="animate-spin">⟳</span> Proceedings in progress...</>
+              <><span className="animate-spin">⟳</span> Running debate...</>
             ) : (
-              submitLabel || "⚖ Open Proceedings"
+              submitLabel || "⚖ Start Debate"
             )}
           </button>
         ) : (

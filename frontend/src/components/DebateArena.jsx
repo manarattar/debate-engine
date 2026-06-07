@@ -99,7 +99,7 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
     <div className="w-full max-w-5xl mx-auto px-4 pb-16">
       {/* Topic banner */}
       <div className="text-center mb-8 pt-6">
-        <p className="text-slate-600 text-xs uppercase tracking-widest mb-2">Motion Before the Tribunal</p>
+        <p className="text-slate-600 text-xs uppercase tracking-widest mb-2">Debate Topic</p>
         <h2 className="text-white text-xl font-semibold max-w-2xl mx-auto leading-snug">
           "{topic}"
         </h2>
@@ -119,11 +119,11 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
       {status?.pro_count !== undefined && (
         <div className="flex justify-center gap-4 mb-6">
           <span className="text-xs font-mono text-sky-400/70">
-            ✓ {status.pro_count} proposition sources
+            ✓ {status.pro_count} PRO sources
           </span>
           <span className="text-xs text-slate-700">·</span>
           <span className="text-xs font-mono text-rose-400/70">
-            ✗ {status.con_count} opposition sources
+            ✗ {status.con_count} CON sources
           </span>
         </div>
       )}
@@ -132,7 +132,7 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
       {roundsToShow.length > 0 && (
         <div className="hidden md:grid grid-cols-2 gap-4 mb-4">
           <div className="text-center">
-            <span className="text-sky-400 font-bold text-xs uppercase tracking-widest">Counsel for the Proposition</span>
+            <span className="text-sky-400 font-bold text-xs uppercase tracking-widest">PRO</span>
             {proPersona && (
               <span className="ml-2 text-xs text-sky-500/70 font-mono">
                 ({proPersona})
@@ -140,7 +140,7 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
             )}
           </div>
           <div className="text-center">
-            <span className="text-rose-400 font-bold text-xs uppercase tracking-widest">Counsel for the Opposition</span>
+            <span className="text-rose-400 font-bold text-xs uppercase tracking-widest">CON</span>
             {conPersona && (
               <span className="ml-2 text-xs text-rose-500/70 font-mono">
                 ({conPersona})
