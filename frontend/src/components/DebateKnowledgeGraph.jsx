@@ -61,7 +61,9 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
     if (!el) return;
     const measure = () => {
       const w = Math.round(el.getBoundingClientRect().width);
-      if (w > 0) setWidth(w);
+      // Only update if the change is >2px — prevents scrollbar-driven micro-oscillations
+      // from cascading into an infinite resize loop.
+      if (w > 0) setWidth(prev => (prev === null || Math.abs(prev - w) > 2) ? w : prev);
     };
     measure();
     const ro = new ResizeObserver(measure);
