@@ -31,5 +31,5 @@ services:
 
 databases:
   - name: munazara-db
-    plan: starter          # $7/mo Render Postgres — free tier is discontinued
+    plan: basic            # $7/mo Render Postgres (replaces legacy 'starter' plan)
     region: frankfurt
