@@ -41,15 +41,17 @@ function getColor(domain) {
   return DYNAMIC_PALETTE[idx];
 }
 
-function useGraphWidth() {
-  const [width, setWidth] = useState(() =>
-    Math.min(window.innerWidth - 320, 900)
-  );
+function useContainerWidth(ref) {
+  const [width, setWidth] = useState(400);
   useEffect(() => {
-    const onResize = () => setWidth(Math.min(window.innerWidth - 320, 900));
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+    const measure = () => {
+      if (ref.current) setWidth(ref.current.getBoundingClientRect().width);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (ref.current) ro.observe(ref.current);
+    return () => ro.disconnect();
+  }, [ref]);
   return width;
 }
 
@@ -60,7 +62,8 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
   const [visible, setVisible] = useState(false);
   const graphRef = useRef();
   const rafRef = useRef();
-  const width = useGraphWidth();
+  const containerRef = useRef();
+  const width = useContainerWidth(containerRef);
 
   useEffect(() => {
     getGraphData()
@@ -196,7 +199,8 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
 
   return (
     <div
-      className="w-full flex flex-col items-center gap-4 py-8 px-4"
+      ref={containerRef}
+      className="w-full flex flex-col items-center gap-4 py-8"
       style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease" }}
     >
       <div className="text-center">
@@ -228,8 +232,8 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
 
       {graphData && graphData.debate_count > 0 && (
         <div
-          className="rounded-2xl border border-slate-800 overflow-hidden"
-          style={{ width, height: 460 }}
+          className="w-full rounded-2xl border border-slate-800 overflow-hidden"
+          style={{ height: 460 }}
         >
           <ForceGraph2D
             ref={graphRef}
