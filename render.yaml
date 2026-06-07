@@ -25,11 +25,4 @@ services:
       - key: SENTRY_DSN
         sync: false
       - key: DATABASE_URL
-        fromDatabase:
-          name: munazara-db
-          property: connectionString
-
-databases:
-  - name: munazara-db
-    plan: basic            # $7/mo Render Postgres (replaces legacy 'starter' plan)
-    region: frankfurt
+        sync: false        # create a Postgres DB in Render dashboard, paste connection string here
