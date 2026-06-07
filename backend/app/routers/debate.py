@@ -1,5 +1,7 @@
 import json
+import time
 import uuid
+from collections import defaultdict
 
 from app.database import ArgumentReaction, Debate, Vote, get_db
 from app.dependencies.auth import get_current_user
@@ -12,6 +14,24 @@ from sqlalchemy.orm import Session
 
 router = APIRouter()
 
+# Simple in-memory rate limit: 3 debates per user per hour
+_RATE_LIMIT = 3
+_RATE_WINDOW = 3600
+_user_timestamps: dict[str, list[float]] = defaultdict(list)
+
+
+def _check_rate_limit(user_id: str) -> None:
+    now = time.time()
+    window_start = now - _RATE_WINDOW
+    timestamps = [t for t in _user_timestamps[user_id] if t > window_start]
+    _user_timestamps[user_id] = timestamps
+    if len(timestamps) >= _RATE_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Rate limit: {_RATE_LIMIT} debates per hour. Try again later.",
+        )
+    _user_timestamps[user_id].append(now)
+
 
 @router.post("/debate")
 async def start_debate(
@@ -19,6 +39,7 @@ async def start_debate(
     db: Session = Depends(get_db),
     _user_id: str = Depends(get_current_user),
 ):
+    _check_rate_limit(_user_id)
     debate_id = request.debate_id or str(uuid.uuid4())[:8]
     db_debate = Debate(id=debate_id, topic=request.topic, status="processing")
     db.add(db_debate)

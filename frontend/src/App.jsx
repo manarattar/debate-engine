@@ -274,7 +274,7 @@ export default function App() {
             >
               ☰
             </button>
-            <span className="text-slate-500 text-sm font-medium md:hidden">Debate Engine</span>
+            <span className="text-slate-500 text-sm font-medium md:hidden">Munazara</span>
           </div>
           <div className="flex items-center gap-3 ml-auto">
             {isSignedIn ? (

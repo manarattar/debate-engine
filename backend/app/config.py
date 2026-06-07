@@ -1,5 +1,6 @@
-from pydantic_settings import BaseSettings
 from functools import lru_cache
+
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -8,6 +9,12 @@ class Settings(BaseSettings):
     model_name: str = "gpt-4o-mini"
     tavily_api_key: str = ""
     mock_mode: bool = False
+
+    # Clerk — required in production; backend uses this to verify frontend JWTs
+    clerk_jwks_url: str = ""
+
+    # Sentry — optional; leave empty to disable
+    sentry_dsn: str = ""
 
     @property
     def effective_mock_mode(self) -> bool:
@@ -21,7 +28,11 @@ class Settings(BaseSettings):
             return ["*"]
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
-    model_config = {"env_file": ".env", "extra": "ignore", "protected_namespaces": ("settings_",)}
+    model_config = {
+        "env_file": ".env",
+        "extra": "ignore",
+        "protected_namespaces": ("settings_",),
+    }
 
 
 @lru_cache

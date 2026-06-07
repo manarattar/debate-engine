@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a0f"/>
+      <stop offset="100%" stop-color="#1a1028"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="violet2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Subtle radial glow behind star -->
+  <radialGradient id="glow" cx="50%" cy="40%" r="40%">
+    <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.15"/>
+    <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+  </radialGradient>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- PRO side glow -->
+  <ellipse cx="200" cy="315" rx="180" ry="100" fill="#10b981" fill-opacity="0.05"/>
+  <!-- CON side glow -->
+  <ellipse cx="1000" cy="315" rx="180" ry="100" fill="#ef4444" fill-opacity="0.05"/>
+
+  <!--
+    Islamic 8-pointed star — center (600, 148), scaled up ×5 (outer R=130, inner r=60)
+    Same proportions as logo mark
+  -->
+  <polygon
+    points="
+      600,18
+      633,113
+      722,68
+      675,152
+      730,178
+      675,204
+      722,288
+      633,243
+      600,338
+      567,243
+      478,288
+      525,204
+      470,178
+      525,152
+      478,68
+      567,113
+    "
+    fill="url(#violet)"
+    opacity="0.95"
+  />
+  <!-- Inner octagon -->
+  <polygon
+    points="633,113 675,152 675,204 633,243 567,243 525,204 525,152 567,113"
+    fill="url(#violet2)"
+    opacity="0.55"
+  />
+  <!-- Center jewel -->
+  <circle cx="600" cy="178" r="28" fill="#e9d5ff" opacity="0.8"/>
+
+  <!-- PRO / CON labels -->
+  <rect x="90" y="290" width="100" height="32" rx="16" fill="#064e3b"/>
+  <text x="140" y="311" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#34d399" text-anchor="middle">PRO</text>
+
+  <rect x="1010" y="290" width="100" height="32" rx="16" fill="#450a0a"/>
+  <text x="1060" y="311" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#f87171" text-anchor="middle">CON</text>
+
+  <!-- Main title -->
+  <text x="600" y="410" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="700" fill="white" text-anchor="middle" letter-spacing="2">Munazara</text>
+
+  <!-- Arabic subtitle -->
+  <text x="600" y="450" font-family="Georgia, serif" font-size="22" fill="#7c3aed" text-anchor="middle" letter-spacing="4">مناظرة</text>
+
+  <!-- Tagline -->
+  <text x="600" y="498" font-family="system-ui, sans-serif" font-size="22" fill="#94a3b8" text-anchor="middle">AI argues both sides of any topic — with real sources</text>
+
+  <!-- Feature pills -->
+  <rect x="264" y="532" width="148" height="34" rx="17" fill="#1e1e3a" stroke="#334155" stroke-width="1"/>
+  <text x="338" y="554" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8" text-anchor="middle">🔍 Real Sources</text>
+
+  <rect x="430" y="532" width="160" height="34" rx="17" fill="#1e1e3a" stroke="#334155" stroke-width="1"/>
+  <text x="510" y="554" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8" text-anchor="middle">⚡ Cross-Exam</text>
+
+  <rect x="608" y="532" width="160" height="34" rx="17" fill="#1e1e3a" stroke="#334155" stroke-width="1"/>
+  <text x="688" y="554" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8" text-anchor="middle">🏛 Judge Verdict</text>
+
+  <rect x="786" y="532" width="150" height="34" rx="17" fill="#1e1e3a" stroke="#334155" stroke-width="1"/>
+  <text x="861" y="554" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8" text-anchor="middle">✅ Fact Check</text>
+
+  <!-- Domain -->
+  <text x="600" y="608" font-family="system-ui, sans-serif" font-size="16" fill="#3f3f6a" text-anchor="middle">munazara.manarattar.com</text>
+</svg>

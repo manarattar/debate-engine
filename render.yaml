@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: munazara-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter          # $7/mo — no cold starts
+    region: frankfurt      # change to ohio / oregon if your users are in US
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: "8002"
+      - key: OPENAI_API_KEY
+        sync: false        # set in Render dashboard — never commit secrets
+      - key: OPENAI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: MODEL_NAME
+        value: gpt-4o-mini
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: CLERK_JWKS_URL
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://munazara.manarattar.com
+      - key: SENTRY_DSN
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: munazara-db
+          property: connectionString
+
+databases:
+  - name: munazara-db
+    plan: starter          # $7/mo Render Postgres — free tier is discontinued
+    region: frankfurt

@@ -1,3 +1,4 @@
+import sentry_sdk
 from app.config import get_settings
 from app.database import create_tables
 from app.routers import (debate, export_pdf, factcheck, graph, human_debate,
@@ -5,9 +6,13 @@ from app.routers import (debate, export_pdf, factcheck, graph, human_debate,
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Debate Engine API")
-
 _settings = get_settings()
+
+if _settings.sentry_dsn:
+    sentry_sdk.init(dsn=_settings.sentry_dsn, traces_sample_rate=0.1)
+
+app = FastAPI(title="Munazara API")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_settings.cors_origins_list,
