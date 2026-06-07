@@ -29,8 +29,8 @@ export default function PersonaPicker({ proPersona, conPersona, onChange }) {
             onClick={() => handlePreset(pair)}
             className={`text-xs px-3 py-1.5 rounded-full border transition-colors
               ${proPersona === pair.pro
-                ? "bg-violet-700 border-violet-500 text-white"
-                : "bg-slate-800 border-slate-600 text-slate-300 hover:border-violet-500"
+                ? "bg-amber-700 border-amber-500 text-white"
+                : "bg-slate-800 border-slate-600 text-slate-300 hover:border-amber-500"
               }`}
           >
             {pair.pro} vs {pair.con}
@@ -44,15 +44,15 @@ export default function PersonaPicker({ proPersona, conPersona, onChange }) {
           value={proPersona}
           onChange={(e) => onChange({ pro: e.target.value, con: conPersona })}
           placeholder="PRO persona (optional)"
-          className="bg-slate-800 border border-emerald-700/40 rounded-lg px-3 py-2 text-sm
-            text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+          className="bg-slate-800 border border-sky-700/40 rounded-lg px-3 py-2 text-sm
+            text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 transition-colors"
         />
         <input
           value={conPersona}
           onChange={(e) => onChange({ pro: proPersona, con: e.target.value })}
           placeholder="CON persona (optional)"
-          className="bg-slate-800 border border-red-700/40 rounded-lg px-3 py-2 text-sm
-            text-white placeholder-slate-600 focus:outline-none focus:border-red-500 transition-colors"
+          className="bg-slate-800 border border-rose-700/40 rounded-lg px-3 py-2 text-sm
+            text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 transition-colors"
         />
       </div>
 

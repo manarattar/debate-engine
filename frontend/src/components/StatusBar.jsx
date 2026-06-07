@@ -10,7 +10,7 @@ export default function StatusBar({ message, currentStep, totalSteps }) {
   return (
     <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
       <div className="flex items-center gap-3 mb-3">
-        <span className="animate-spin text-violet-400 text-lg">⟳</span>
+        <span className="animate-spin text-amber-400 text-lg">⟳</span>
         <span className="text-slate-300 text-sm">{message}</span>
       </div>
       <div className="flex items-center gap-1">
@@ -19,9 +19,9 @@ export default function StatusBar({ message, currentStep, totalSteps }) {
             <div
               className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
                 step.key < currentStep
-                  ? "bg-violet-500"
+                  ? "bg-amber-500"
                   : step.key === currentStep
-                  ? "bg-violet-400 animate-pulse"
+                  ? "bg-amber-400 animate-pulse"
                   : "bg-slate-700"
               }`}
             />
@@ -33,7 +33,7 @@ export default function StatusBar({ message, currentStep, totalSteps }) {
           <span
             key={step.key}
             className={`text-xs ${
-              step.key <= currentStep ? "text-violet-400" : "text-slate-600"
+              step.key <= currentStep ? "text-amber-400" : "text-slate-600"
             }`}
           >
             {step.label}

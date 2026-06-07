@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { getHistory, getLeaderboard } from "../api";
 
 const WINNER_BADGE = {
-  pro: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  con: "bg-red-500/20 text-red-400 border-red-500/30",
+  pro: "bg-sky-500/20 text-sky-400 border-sky-500/30",
+  con: "bg-rose-500/20 text-rose-400 border-rose-500/30",
   tie: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
   unknown: "bg-slate-700 text-slate-400 border-slate-600",
 };
@@ -152,7 +152,7 @@ export default function HistoryPanel({ onSelect, currentTopic, isOpen, onClose }
           onClick={() => setTab("history")}
           className={`flex-1 py-2 text-xs font-medium transition-colors ${
             tab === "history"
-              ? "text-violet-400 border-b-2 border-violet-500"
+              ? "text-amber-400 border-b-2 border-amber-500"
               : "text-slate-500 hover:text-slate-300"
           }`}
         >
@@ -162,7 +162,7 @@ export default function HistoryPanel({ onSelect, currentTopic, isOpen, onClose }
           onClick={() => setTab("top")}
           className={`flex-1 py-2 text-xs font-medium transition-colors ${
             tab === "top"
-              ? "text-violet-400 border-b-2 border-violet-500"
+              ? "text-amber-400 border-b-2 border-amber-500"
               : "text-slate-500 hover:text-slate-300"
           }`}
         >

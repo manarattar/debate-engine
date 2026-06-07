@@ -19,11 +19,11 @@ function CrossExamSection({ pair, events, streaming }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-violet-800/30" />
-        <span className="text-xs text-violet-400 uppercase tracking-widest font-medium px-2">
+        <div className="h-px flex-1 bg-amber-800/30" />
+        <span className="text-xs text-amber-400 uppercase tracking-widest font-medium px-2">
           ⚡ {pair.label}
         </span>
-        <div className="h-px flex-1 bg-violet-800/30" />
+        <div className="h-px flex-1 bg-amber-800/30" />
       </div>
       {(q || qStreaming) && (
         <ArgumentCard
@@ -61,8 +61,8 @@ function RoundColumns({ round, proArgs, conArgs, streaming, scores, debateId, re
         ) : proStreaming ? (
           <ArgumentCard side="pro" round_name={round} content={streaming.content} citations={[]} streaming={true} />
         ) : (
-          <div className="border border-emerald-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
-            <span className="text-emerald-900 text-xs">waiting...</span>
+          <div className="border border-sky-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
+            <span className="text-sky-900 text-xs">waiting...</span>
           </div>
         )}
       </div>
@@ -72,8 +72,8 @@ function RoundColumns({ round, proArgs, conArgs, streaming, scores, debateId, re
         ) : conStreaming ? (
           <ArgumentCard side="con" round_name={round} content={streaming.content} citations={[]} streaming={true} />
         ) : (
-          <div className="border border-red-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
-            <span className="text-red-900 text-xs">waiting...</span>
+          <div className="border border-rose-900/20 rounded-xl p-5 h-16 flex items-center justify-center">
+            <span className="text-rose-900 text-xs">waiting...</span>
           </div>
         )}
       </div>
@@ -113,10 +113,10 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
       {/* Source count badges */}
       {status?.pro_count !== undefined && (
         <div className="flex justify-center gap-4 mb-6">
-          <span className="text-xs px-3 py-1 bg-emerald-900/30 border border-emerald-700/30 text-emerald-400 rounded-full">
+          <span className="text-xs px-3 py-1 bg-sky-900/30 border border-sky-700/30 text-sky-400 rounded-full">
             ✓ {status.pro_count} PRO source chunks
           </span>
-          <span className="text-xs px-3 py-1 bg-red-900/30 border border-red-700/30 text-red-400 rounded-full">
+          <span className="text-xs px-3 py-1 bg-rose-900/30 border border-rose-700/30 text-rose-400 rounded-full">
             ✗ {status.con_count} CON source chunks
           </span>
         </div>
@@ -126,17 +126,17 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
       {roundsToShow.length > 0 && (
         <div className="hidden md:grid grid-cols-2 gap-4 mb-4">
           <div className="text-center">
-            <span className="text-emerald-400 font-bold text-sm uppercase tracking-widest">⬆ PRO</span>
+            <span className="text-sky-400 font-bold text-sm uppercase tracking-widest">⬆ PRO</span>
             {proPersona && (
-              <span className="ml-2 text-xs px-2 py-0.5 bg-emerald-900/40 border border-emerald-700/40 text-emerald-300 rounded-full">
+              <span className="ml-2 text-xs px-2 py-0.5 bg-sky-900/40 border border-sky-700/40 text-sky-300 rounded-full">
                 {proPersona}
               </span>
             )}
           </div>
           <div className="text-center">
-            <span className="text-red-400 font-bold text-sm uppercase tracking-widest">CON ⬇</span>
+            <span className="text-rose-400 font-bold text-sm uppercase tracking-widest">CON ⬇</span>
             {conPersona && (
-              <span className="ml-2 text-xs px-2 py-0.5 bg-red-900/40 border border-red-700/40 text-red-300 rounded-full">
+              <span className="ml-2 text-xs px-2 py-0.5 bg-rose-900/40 border border-rose-700/40 text-rose-300 rounded-full">
                 {conPersona}
               </span>
             )}

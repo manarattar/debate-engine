@@ -2,14 +2,14 @@ import { useState } from "react";
 import { runFactCheck } from "../api";
 
 const VERDICT_CONFIG = {
-  verified:     { label: "Verified",      color: "text-emerald-400", bg: "bg-emerald-900/40 border-emerald-700", icon: "✓" },
+  verified:     { label: "Verified",      color: "text-sky-400",     bg: "bg-sky-900/40 border-sky-700",        icon: "✓" },
   contested:    { label: "Contested",     color: "text-yellow-400",  bg: "bg-yellow-900/40 border-yellow-700",  icon: "~" },
   misleading:   { label: "Misleading",    color: "text-red-400",     bg: "bg-red-900/40 border-red-700",        icon: "✗" },
   unverifiable: { label: "Unverifiable",  color: "text-slate-400",   bg: "bg-slate-800/60 border-slate-700",    icon: "?" },
 };
 
 const CONFIDENCE_COLOR = {
-  High:   "text-emerald-400",
+  High:   "text-sky-400",
   Medium: "text-yellow-400",
   Low:    "text-slate-400",
 };
@@ -46,7 +46,7 @@ export default function FactCheckPanel({ debateId }) {
         {state === "idle" && (
           <button
             onClick={handleRun}
-            className="text-xs px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-medium transition-colors"
+            className="text-xs px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-medium transition-colors"
           >
             Run Fact Check
           </button>
@@ -124,7 +124,7 @@ export default function FactCheckPanel({ debateId }) {
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-violet-400 hover:text-violet-300 underline underline-offset-2 truncate max-w-xs"
+                        className="text-xs text-amber-400 hover:text-amber-300 underline underline-offset-2 truncate max-w-xs"
                       >
                         {(() => { try { return new URL(url).hostname; } catch { return url; } })()}
                       </a>
@@ -142,7 +142,7 @@ export default function FactCheckPanel({ debateId }) {
 
 function LoadingSpinner() {
   return (
-    <svg className="h-6 w-6 animate-spin text-violet-500" viewBox="0 0 24 24" fill="none">
+    <svg className="h-6 w-6 animate-spin text-amber-500" viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
     </svg>

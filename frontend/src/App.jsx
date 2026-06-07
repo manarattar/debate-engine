@@ -286,7 +286,7 @@ export default function App() {
               </>
             ) : (
               <SignInButton mode="modal">
-                <button className="text-xs px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-colors font-medium">
+                <button className="text-xs px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors font-medium">
                   Sign in
                 </button>
               </SignInButton>
@@ -307,7 +307,7 @@ export default function App() {
               <button
                 onClick={() => setDebateMode("human")}
                 className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors
-                  ${debateMode === "human" ? "bg-violet-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
+                  ${debateMode === "human" ? "bg-amber-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
               >
                 🧑 Debate the AI
               </button>
@@ -332,7 +332,7 @@ export default function App() {
             </div>
             <button
               onClick={() => handleStartDebate(pendingVoteTopic)}
-              className="px-8 py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl transition-colors"
+              className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition-colors"
             >
               ⚔️ Start Debate
             </button>
@@ -402,7 +402,7 @@ export default function App() {
                 )}
                 <button
                   onClick={handleReset}
-                  className="text-sm px-4 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-colors"
+                  className="text-sm px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors"
                 >
                   + New Debate
                 </button>

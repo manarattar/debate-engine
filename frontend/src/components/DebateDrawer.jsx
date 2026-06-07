@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { getDebate } from "../api";
 
 const WINNER_STYLES = {
-  pro: ["Pro wins", "bg-emerald-950 text-emerald-400 border-emerald-800"],
-  con: ["Con wins", "bg-red-950 text-red-400 border-red-800"],
+  pro: ["Pro wins", "bg-sky-950 text-sky-400 border-sky-800"],
+  con: ["Con wins", "bg-rose-950 text-rose-400 border-rose-800"],
   tie: ["Tie", "bg-slate-800 text-slate-400 border-slate-700"],
 };
 
@@ -103,7 +103,7 @@ export default function DebateDrawer({ debateId, onClose, onViewFull }) {
           <div className="px-6 py-4 border-t border-slate-800 shrink-0">
             <button
               onClick={() => onViewFull(debate)}
-              className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl transition-colors"
+              className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition-colors"
             >
               View Full Debate →
             </button>

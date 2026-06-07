@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
 const WINNER_STYLES = {
-  pro: { label: "PRO WINS", color: "text-emerald-400", border: "border-emerald-500/40", bg: "bg-emerald-900/10" },
-  con: { label: "CON WINS", color: "text-red-400", border: "border-red-500/40", bg: "bg-red-900/10" },
+  pro: { label: "PRO WINS", color: "text-sky-400", border: "border-sky-500/40", bg: "bg-sky-900/10" },
+  con: { label: "CON WINS", color: "text-rose-400", border: "border-rose-500/40", bg: "bg-rose-900/10" },
   tie: { label: "TIE", color: "text-yellow-400", border: "border-yellow-500/40", bg: "bg-yellow-900/10" },
 };
 

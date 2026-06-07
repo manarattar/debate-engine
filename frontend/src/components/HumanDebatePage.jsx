@@ -11,8 +11,8 @@ function ArgumentInput({ label, placeholder, onSubmit, disabled }) {
   const MAX = 1200;
 
   return (
-    <div className="border border-violet-900/40 bg-slate-800/60 rounded-xl p-5 flex flex-col gap-3">
-      <p className="text-violet-300 text-xs font-bold uppercase tracking-widest">{label}</p>
+    <div className="border border-amber-900/40 bg-slate-800/60 rounded-xl p-5 flex flex-col gap-3">
+      <p className="text-amber-300 text-xs font-bold uppercase tracking-widest">{label}</p>
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value.slice(0, MAX))}
@@ -20,14 +20,14 @@ function ArgumentInput({ label, placeholder, onSubmit, disabled }) {
         disabled={disabled}
         rows={6}
         className="w-full bg-slate-900 text-slate-200 text-sm rounded-lg p-3 resize-none border border-slate-700
-          focus:outline-none focus:border-violet-500 placeholder-slate-600 disabled:opacity-50"
+          focus:outline-none focus:border-amber-500 placeholder-slate-600 disabled:opacity-50"
       />
       <div className="flex justify-between items-center">
         <span className="text-xs text-slate-600">{text.length} / {MAX}</span>
         <button
           onClick={() => text.trim() && onSubmit(text.trim())}
           disabled={disabled || !text.trim()}
-          className="px-4 py-1.5 bg-violet-600 hover:bg-violet-500 disabled:bg-slate-700
+          className="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700
             disabled:text-slate-500 text-white text-sm rounded-lg transition-colors font-medium"
         >
           Submit →
@@ -40,8 +40,8 @@ function ArgumentInput({ label, placeholder, onSubmit, disabled }) {
 // ── Waiting placeholder ────────────────────────────────────────────────────
 
 function WaitingCard({ side }) {
-  const color = side === "pro" ? "border-emerald-900/20" : "border-red-900/20";
-  const text = side === "pro" ? "text-emerald-900" : "text-red-900";
+  const color = side === "pro" ? "border-sky-900/20" : "border-rose-900/20";
+  const text = side === "pro" ? "text-sky-900" : "text-rose-900";
   return (
     <div className={`border ${color} rounded-xl p-5 h-32 flex items-center justify-center`}>
       <span className={`text-xs ${text}`}>waiting...</span>
@@ -64,21 +64,21 @@ function SidePicker({ topic, onPick }) {
       <div className="flex gap-4 w-full max-w-xl">
         <button
           onClick={() => onPick("pro")}
-          className="flex-1 flex flex-col items-center gap-3 border-2 border-emerald-500/30 bg-emerald-950/20
-            hover:border-emerald-400/60 hover:bg-emerald-950/40 rounded-2xl p-8 transition-all group"
+          className="flex-1 flex flex-col items-center gap-3 border-2 border-sky-500/30 bg-sky-950/20
+            hover:border-sky-400/60 hover:bg-sky-950/40 rounded-2xl p-8 transition-all group"
         >
           <span className="text-4xl group-hover:scale-110 transition-transform">⬆</span>
-          <span className="text-emerald-400 font-bold text-xl">PRO</span>
+          <span className="text-sky-400 font-bold text-xl">PRO</span>
           <span className="text-slate-400 text-sm text-center">Argue FOR the topic</span>
         </button>
 
         <button
           onClick={() => onPick("con")}
-          className="flex-1 flex flex-col items-center gap-3 border-2 border-red-500/30 bg-red-950/20
-            hover:border-red-400/60 hover:bg-red-950/40 rounded-2xl p-8 transition-all group"
+          className="flex-1 flex flex-col items-center gap-3 border-2 border-rose-500/30 bg-rose-950/20
+            hover:border-rose-400/60 hover:bg-rose-950/40 rounded-2xl p-8 transition-all group"
         >
           <span className="text-4xl group-hover:scale-110 transition-transform">⬇</span>
-          <span className="text-red-400 font-bold text-xl">CON</span>
+          <span className="text-rose-400 font-bold text-xl">CON</span>
           <span className="text-slate-400 text-sm text-center">Argue AGAINST the topic</span>
         </button>
       </div>
@@ -92,11 +92,11 @@ function ColHeader({ side, isHuman }) {
   const isPro = side === "pro";
   return (
     <div className="text-center mb-3">
-      <span className={`font-bold text-sm uppercase tracking-widest ${isPro ? "text-emerald-400" : "text-red-400"}`}>
+      <span className={`font-bold text-sm uppercase tracking-widest ${isPro ? "text-sky-400" : "text-rose-400"}`}>
         {isPro ? "⬆ PRO" : "CON ⬇"}
       </span>
       {isHuman && (
-        <span className="ml-2 text-xs px-2 py-0.5 bg-violet-900/40 border border-violet-500/30 text-violet-300 rounded-full">
+        <span className="ml-2 text-xs px-2 py-0.5 bg-amber-900/40 border border-amber-500/30 text-amber-300 rounded-full">
           YOU
         </span>
       )}
@@ -239,7 +239,7 @@ export default function HumanDebatePage({ topic, onReset }) {
   if (phase === "gathering") {
     return (
       <div className="flex flex-col items-center justify-center mt-24 gap-6">
-        <div className="w-12 h-12 border-4 border-violet-700 border-t-violet-400 rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-amber-700 border-t-amber-400 rounded-full animate-spin" />
         <p className="text-slate-400">Researching both sides of the debate...</p>
       </div>
     );
@@ -262,7 +262,7 @@ export default function HumanDebatePage({ topic, onReset }) {
       {/* Topic banner */}
       <div className="text-center mb-8 pt-6">
         <div className="inline-block bg-slate-800 border border-slate-600 rounded-2xl px-6 py-3">
-          <p className="text-slate-400 text-sm mb-1">You are debating as <span className={humanSide === "pro" ? "text-emerald-400 font-semibold" : "text-red-400 font-semibold"}>{humanSide?.toUpperCase()}</span></p>
+          <p className="text-slate-400 text-sm mb-1">You are debating as <span className={humanSide === "pro" ? "text-sky-400 font-semibold" : "text-rose-400 font-semibold"}>{humanSide?.toUpperCase()}</span></p>
           <h2 className="text-white text-xl font-semibold">"{topic}"</h2>
         </div>
       </div>

@@ -76,14 +76,14 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
           disabled={isLoading}
           rows={3}
           className="w-full bg-slate-800 border border-slate-600 rounded-xl px-5 py-4 text-white
-            placeholder-slate-500 text-lg resize-none focus:outline-none focus:border-violet-500
+            placeholder-slate-500 text-lg resize-none focus:outline-none focus:border-amber-500
             disabled:opacity-50 transition-colors"
         />
         {isSignedIn ? (
           <button
             type="submit"
             disabled={!topic.trim() || isLoading}
-            className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-slate-700
+            className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700
               disabled:text-slate-500 text-white font-semibold py-4 rounded-xl text-lg
               transition-colors flex items-center justify-center gap-2"
           >
@@ -97,7 +97,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
           <SignInButton mode="modal">
             <button
               type="button"
-              className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-4 rounded-xl text-lg transition-colors"
+              className="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-4 rounded-xl text-lg transition-colors"
             >
               Sign in to start a debate
             </button>
@@ -108,7 +108,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
       {/* Persona toggle */}
       <button
         onClick={() => setShowPersonas((v) => !v)}
-        className="text-sm text-slate-500 hover:text-violet-400 transition-colors"
+        className="text-sm text-slate-500 hover:text-amber-400 transition-colors"
       >
         🎭 {showPersonas ? "Hide personas" : "Add debate personas (optional)"}
       </button>

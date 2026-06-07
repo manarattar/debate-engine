@@ -4,20 +4,20 @@ import { submitReaction } from "../api";
 
 const SIDE_STYLES = {
   pro: {
-    border: "border-emerald-500/30",
-    bg: "bg-emerald-950/20",
-    badge: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
+    border: "border-sky-500/30",
+    bg: "bg-sky-950/20",
+    badge: "bg-sky-500/20 text-sky-400 border border-sky-500/30",
     label: "PRO",
     icon: "✓",
-    citationBg: "bg-emerald-900/30 border-emerald-700/30",
+    citationBg: "bg-sky-900/30 border-sky-700/30",
   },
   con: {
-    border: "border-red-500/30",
-    bg: "bg-red-950/20",
-    badge: "bg-red-500/20 text-red-400 border border-red-500/30",
+    border: "border-rose-500/30",
+    bg: "bg-rose-950/20",
+    badge: "bg-rose-500/20 text-rose-400 border border-rose-500/30",
     label: "CON",
     icon: "✗",
-    citationBg: "bg-red-900/30 border-red-700/30",
+    citationBg: "bg-rose-900/30 border-rose-700/30",
   },
 };
 
@@ -46,10 +46,10 @@ function getSessionId() {
 function ScoreBadge({ score }) {
   const color =
     score >= 8
-      ? "text-emerald-400 border-emerald-500/40 bg-emerald-900/30"
+      ? "text-sky-400 border-sky-500/40 bg-sky-900/30"
       : score >= 5
         ? "text-yellow-400 border-yellow-500/40 bg-yellow-900/20"
-        : "text-red-400 border-red-500/40 bg-red-900/20";
+        : "text-rose-400 border-rose-500/40 bg-rose-900/20";
   return (
     <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${color}`}>
       {score}/10
@@ -104,7 +104,7 @@ function ReactionButtons({ debateId, side, round_name, initialReactions }) {
         onClick={() => handleReact("like")}
         className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-colors
           ${myReaction === "like"
-            ? "bg-emerald-900/50 border-emerald-500/50 text-emerald-400"
+            ? "bg-sky-900/50 border-sky-500/50 text-sky-400"
             : "border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500"}`}
       >
         👍 {likes > 0 && <span>{likes}</span>}
@@ -113,7 +113,7 @@ function ReactionButtons({ debateId, side, round_name, initialReactions }) {
         onClick={() => handleReact("dislike")}
         className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-colors
           ${myReaction === "dislike"
-            ? "bg-red-900/50 border-red-500/50 text-red-400"
+            ? "bg-rose-900/50 border-rose-500/50 text-rose-400"
             : "border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500"}`}
       >
         👎 {dislikes > 0 && <span>{dislikes}</span>}
@@ -159,7 +159,7 @@ export default function ArgumentCard({
 
       <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
         {content}
-        {streaming && <span className="animate-pulse text-violet-400">▌</span>}
+        {streaming && <span className="animate-pulse text-amber-400">▌</span>}
       </p>
 
       {showReactions && (

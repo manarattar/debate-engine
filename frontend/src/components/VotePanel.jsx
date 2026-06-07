@@ -19,18 +19,18 @@ function TallyBar({ pro, con, total, label }) {
       <p className="text-xs text-slate-500 text-center">{label}</p>
       <div className="flex rounded-full overflow-hidden h-3">
         <div
-          className="bg-emerald-500 transition-all duration-500"
+          className="bg-sky-500 transition-all duration-500"
           style={{ width: `${proPct}%` }}
         />
         <div
-          className="bg-red-500 transition-all duration-500"
+          className="bg-rose-500 transition-all duration-500"
           style={{ width: `${conPct}%` }}
         />
       </div>
       <div className="flex justify-between text-xs text-slate-400">
-        <span className="text-emerald-400">PRO {proPct}%</span>
+        <span className="text-sky-400">PRO {proPct}%</span>
         <span className="text-slate-500">{total} vote{total !== 1 ? "s" : ""}</span>
-        <span className="text-red-400">{conPct}% CON</span>
+        <span className="text-rose-400">{conPct}% CON</span>
       </div>
     </div>
   );
@@ -64,15 +64,15 @@ export default function VotePanel({ debateId, phase, topic }) {
   const phaseTally = tally?.[phase];
 
   return (
-    <div className="border border-violet-500/20 bg-violet-950/20 rounded-xl p-4 flex flex-col gap-3">
-      <p className="text-sm font-medium text-violet-300 text-center">
+    <div className="border border-amber-500/20 bg-amber-950/20 rounded-xl p-4 flex flex-col gap-3">
+      <p className="text-sm font-medium text-amber-300 text-center">
         {phase === "before" ? "🗳 Who do you think will win?" : "🏆 Who won the debate?"}
       </p>
 
       {!voted ? (
         !isSignedIn ? (
           <SignInButton mode="modal">
-            <button className="w-full py-2 rounded-lg border border-violet-500/40 text-violet-400 text-sm font-medium hover:bg-violet-900/30 transition-colors">
+            <button className="w-full py-2 rounded-lg border border-amber-500/40 text-amber-400 text-sm font-medium hover:bg-amber-900/30 transition-colors">
               Sign in to vote
             </button>
           </SignInButton>
@@ -80,13 +80,13 @@ export default function VotePanel({ debateId, phase, topic }) {
         <div className="flex gap-3 justify-center">
           <button
             onClick={() => handleVote("pro")}
-            className="flex-1 py-2 rounded-lg bg-emerald-700/40 hover:bg-emerald-600/50 border border-emerald-600/40 text-emerald-300 text-sm font-semibold transition-colors"
+            className="flex-1 py-2 rounded-lg bg-sky-700/40 hover:bg-sky-600/50 border border-sky-600/40 text-sky-300 text-sm font-semibold transition-colors"
           >
             ✓ PRO
           </button>
           <button
             onClick={() => handleVote("con")}
-            className="flex-1 py-2 rounded-lg bg-red-700/40 hover:bg-red-600/50 border border-red-600/40 text-red-300 text-sm font-semibold transition-colors"
+            className="flex-1 py-2 rounded-lg bg-rose-700/40 hover:bg-rose-600/50 border border-rose-600/40 text-rose-300 text-sm font-semibold transition-colors"
           >
             ✗ CON
           </button>
