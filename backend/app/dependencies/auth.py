@@ -39,7 +39,12 @@ async def get_current_user(authorization: str = Header(None)) -> str:
         if not key_data:
             raise ValueError("No matching key")
         public_key = RSAAlgorithm.from_jwk(json.dumps(key_data))
-        payload = jwt.decode(token, public_key, algorithms=["RS256"])
+        payload = jwt.decode(
+            token,
+            public_key,
+            algorithms=["RS256"],
+            options={"verify_aud": False},  # Clerk does not set aud by default
+        )
         return payload["sub"]
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail=f"Invalid token: {exc}")
