@@ -41,29 +41,29 @@ function getColor(domain) {
   return DYNAMIC_PALETTE[idx];
 }
 
-function useContainerWidth(ref) {
-  const [width, setWidth] = useState(400);
-  useEffect(() => {
-    const measure = () => {
-      if (ref.current) setWidth(ref.current.getBoundingClientRect().width);
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (ref.current) ro.observe(ref.current);
-    return () => ro.disconnect();
-  }, [ref]);
-  return width;
-}
-
 export default function DebateKnowledgeGraph({ onDebateSelect }) {
   const [graphData, setGraphData] = useState(null);
   const [domainDegree, setDomainDegree] = useState({});
   const [hoveredNode, setHoveredNode] = useState(null);
   const [visible, setVisible] = useState(false);
+  const [width, setWidth] = useState(null);
   const graphRef = useRef();
   const rafRef = useRef();
-  const graphBoxRef = useRef();
-  const width = useContainerWidth(graphBoxRef);
+  const roRef = useRef(null);
+
+  // Callback ref: fires the moment the container div mounts, giving us the real width
+  // before ForceGraph2D ever initialises its simulation
+  const graphBoxRef = useCallback((node) => {
+    if (roRef.current) { roRef.current.disconnect(); roRef.current = null; }
+    if (!node) return;
+    const measure = () => {
+      const w = node.getBoundingClientRect().width;
+      if (w > 0) setWidth(w);
+    };
+    measure();
+    roRef.current = new ResizeObserver(measure);
+    roRef.current.observe(node);
+  }, []);
 
   useEffect(() => {
     getGraphData()
@@ -235,7 +235,7 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
           className="w-full rounded-2xl border border-slate-800 overflow-hidden"
           style={{ height: 460 }}
         >
-          <ForceGraph2D
+          {width !== null && <ForceGraph2D
             ref={graphRef}
             graphData={data}
             width={width}
@@ -254,7 +254,7 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
             nodeId="id"
             linkSource="source"
             linkTarget="target"
-          />
+          />}
         </div>
       )}
     </div>
