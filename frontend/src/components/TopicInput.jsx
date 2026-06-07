@@ -53,10 +53,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
   return (
     <div className="flex flex-col items-center gap-8 py-16 px-6">
       <div className="text-center">
-        <div className="mb-4">
-          <img src="/logo.svg" alt="Munazara" className="h-16 mx-auto" />
-        </div>
-        <h1 className="text-4xl font-bold text-white mb-2">Munazara</h1>
+        <img src="/logo.svg" alt="Munazara" className="h-20 mx-auto mb-4" />
         <p className="text-slate-400 text-lg">
           AI argues both sides of any topic — with real sources
         </p>

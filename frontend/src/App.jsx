@@ -274,7 +274,7 @@ export default function App() {
             >
               ☰
             </button>
-            <span className="text-slate-500 text-sm font-medium md:hidden">Munazara</span>
+            <img src="/logo.svg" alt="Munazara" className="h-7" />
           </div>
           <div className="flex items-center gap-3 ml-auto">
             {isSignedIn ? (
