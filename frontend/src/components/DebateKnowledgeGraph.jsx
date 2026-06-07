@@ -49,20 +49,24 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
   const [width, setWidth] = useState(null);
   const graphRef = useRef();
   const rafRef = useRef();
-  const roRef = useRef(null);
+  // Watch the outer wrapper (always mounted, purely CSS-sized) — never the inner
+  // graphBoxRef div which contains ForceGraph2D.  Watching the inner div creates
+  // a ResizeObserver feedback loop: ForceGraph2D mutates the canvas on init →
+  // observer fires → new width prop → ForceGraph re-renders → repeat.
+  const outerRef = useRef(null);
+  const graphBoxRef = useRef(null);
 
-  // Callback ref: fires the moment the container div mounts, giving us the real width
-  // before ForceGraph2D ever initialises its simulation
-  const graphBoxRef = useCallback((node) => {
-    if (roRef.current) { roRef.current.disconnect(); roRef.current = null; }
-    if (!node) return;
+  useEffect(() => {
+    const el = outerRef.current;
+    if (!el) return;
     const measure = () => {
-      const w = node.getBoundingClientRect().width;
+      const w = Math.round(el.getBoundingClientRect().width);
       if (w > 0) setWidth(w);
     };
     measure();
-    roRef.current = new ResizeObserver(measure);
-    roRef.current.observe(node);
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   useEffect(() => {
@@ -199,6 +203,7 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
 
   return (
     <div
+      ref={outerRef}
       className="w-full flex flex-col items-center gap-4 py-8"
       style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease" }}
     >
