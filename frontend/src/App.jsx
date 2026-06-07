@@ -294,31 +294,33 @@ export default function App() {
           </div>
         </div>
         {phase === "idle" && (
-          <div className="flex flex-col items-center">
-            {/* Mode toggle */}
-            <div className="flex gap-1 bg-slate-800 p-1 rounded-xl mt-8 mx-6">
-              <button
-                onClick={() => setDebateMode("ai")}
-                className={`px-5 py-2 rounded-sm text-xs font-medium uppercase tracking-wide transition-colors
-                  ${debateMode === "ai" ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
-              >
-                ⚖ Watch Tribunal
-              </button>
-              <button
-                onClick={() => setDebateMode("human")}
-                className={`px-5 py-2 rounded-sm text-xs font-medium uppercase tracking-wide transition-colors
-                  ${debateMode === "human" ? "bg-amber-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
-              >
-                🧑 Argue Your Case
-              </button>
+          <>
+            <div className="flex flex-col items-center">
+              {/* Mode toggle */}
+              <div className="flex gap-1 bg-slate-800 p-1 rounded-xl mt-8 mx-6">
+                <button
+                  onClick={() => setDebateMode("ai")}
+                  className={`px-5 py-2 rounded-sm text-xs font-medium uppercase tracking-wide transition-colors
+                    ${debateMode === "ai" ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
+                >
+                  ⚖ Watch Tribunal
+                </button>
+                <button
+                  onClick={() => setDebateMode("human")}
+                  className={`px-5 py-2 rounded-sm text-xs font-medium uppercase tracking-wide transition-colors
+                    ${debateMode === "human" ? "bg-amber-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
+                >
+                  🧑 Argue Your Case
+                </button>
+              </div>
+              <TopicInput
+                onSubmit={handleSubmit}
+                isLoading={false}
+                submitLabel={debateMode === "human" ? "🧑 Choose My Side →" : undefined}
+              />
             </div>
-            <TopicInput
-              onSubmit={handleSubmit}
-              isLoading={false}
-              submitLabel={debateMode === "human" ? "🧑 Choose My Side →" : undefined}
-            />
             <DebateKnowledgeGraph onDebateSelect={(id) => setDrawerDebateId(id)} />
-          </div>
+          </>
         )}
 
         {phase === "prevote" && (
