@@ -1,11 +1,10 @@
 import { Link } from "react-router-dom";
 
 const STACK = [
-  { layer: "LLM", items: ["Cerebras (ultra-fast inference)", "LLaMA 3.3 70B"] },
-  { layer: "Research", items: ["Tavily Search API", "ChromaDB vector store", "RAG pipeline"] },
-  { layer: "Backend", items: ["FastAPI", "PostgreSQL", "Server-Sent Events"] },
-  { layer: "Frontend", items: ["React 19", "Tailwind CSS v4", "Vite", "Clerk auth"] },
-  { layer: "Infra", items: ["Vercel (frontend)", "Render (backend)"] },
+  { layer: "Language Model", items: ["gpt-4o-mini", "Streaming inference", "Prompt engineering", "Structured output parsing"] },
+  { layer: "Retrieval & Search", items: ["Tavily real-time web search", "ChromaDB vector store", "Cosine similarity retrieval", "RAG pipeline"] },
+  { layer: "Backend", items: ["FastAPI", "PostgreSQL", "Server-Sent Events (SSE)", "JWT auth (Clerk)"] },
+  { layer: "Frontend", items: ["React 19", "Tailwind CSS v4", "Vite", "Force-directed graph (D3)"] },
 ];
 
 const FEATURES = [
@@ -27,7 +26,7 @@ const FEATURES = [
   {
     icon: "⚖️",
     title: "AI Judge",
-    desc: "An independent judge model scores each round and delivers a reasoned verdict with citations.",
+    desc: "After all rounds complete, the same LLM reads both sides' full arguments and all retrieved sources, then delivers a reasoned verdict and round-by-round scores.",
   },
   {
     icon: "🔍",
@@ -76,7 +75,7 @@ export default function About() {
         <div className="text-center mb-20">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-medium mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            Powered by Cerebras · Built by Manar Attar
+            RAG · gpt-4o-mini · Built by Manar Attar
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
             What is{" "}
@@ -116,10 +115,11 @@ export default function About() {
           <div className="flex flex-col gap-0">
             {[
               { step: "01", title: "Enter a topic", desc: "Type any debate topic — political, philosophical, scientific, or everyday." },
-              { step: "02", title: "Evidence gathered", desc: "Tavily searches the web in real time. Relevant sources are ranked and stored in ChromaDB." },
-              { step: "03", title: "Arguments generated", desc: "Cerebras (LLaMA 3.3 70B) generates PRO and CON arguments grounded in the retrieved evidence, streamed live." },
-              { step: "04", title: "Judge evaluates", desc: "An independent judge model scores each round on logic, evidence, and persuasiveness." },
-              { step: "05", title: "You decide", desc: "Vote, react, fact-check, and explore the debate. Every debate is saved to the knowledge graph." },
+              { step: "02", title: "Search strategy", desc: "The LLM generates targeted search queries for both the PRO and CON sides independently." },
+              { step: "03", title: "Evidence indexed", desc: "Tavily fetches real-time web results for each side. Content is chunked and indexed in ChromaDB as two separate vector stores." },
+              { step: "04", title: "4-round debate", desc: "Opening statements → Rebuttals → Cross-examination (questions + answers from both sides) → Closing statements. Each argument is retrieved from the relevant vector store and streamed live token by token." },
+              { step: "05", title: "Judge deliberates", desc: "After all rounds, the LLM reads every argument alongside retrieved evidence and delivers a scored verdict with citations." },
+              { step: "06", title: "You decide", desc: "Vote, react to individual rounds, fact-check claims against live sources, and explore the debate in the knowledge graph." },
             ].map((s, i, arr) => (
               <div key={s.step} className="flex gap-5">
                 <div className="flex flex-col items-center">
