@@ -19,7 +19,7 @@ function ViewBadge({ count }) {
   );
 }
 
-export default function HistoryPanel({ onSelect, currentTopic, isOpen, onClose, onHasContent }) {
+export default function HistoryPanel({ onSelect, currentTopic, isOpen, onClose }) {
   const [history, setHistory] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [tab, setTab] = useState("history"); // "history" | "top"
@@ -175,10 +175,6 @@ export default function HistoryPanel({ onSelect, currentTopic, isOpen, onClose, 
   const body = tab === "history" ? historyItems : leaderboardItems;
 
   const hasContent = history.length > 0 || leaderboard.length > 0;
-
-  useEffect(() => {
-    onHasContent?.(hasContent);
-  }, [hasContent, onHasContent]);
 
   return (
     <>
