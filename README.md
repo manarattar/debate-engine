@@ -1,20 +1,25 @@
-# Munazara
+# Munazara — AI Debate Engine
 
-**Watch AI argue both sides of any topic — with real sources, cross-examination, and a judge verdict.**
+**A multi-agent debate platform where three specialized AI agents argue both sides of any topic using live web sources, then an independent judge delivers a scored verdict.**
 
-[Live app](https://munazara.manarattar.com) · [Backend API](https://your-render-url.onrender.com/docs)
+[Live app](https://munazara.manarattar.com) · [About](https://munazara.manarattar.com/about) · [API docs](https://munazara-api.onrender.com/docs)
 
 ---
 
 ## What it does
 
-Enter any debate topic. Two AI debaters (PRO and CON) compete through a full structured debate:
+Enter any debate topic. Three specialized AI agents run a full structured debate:
 
-1. **Opening statements** — each side builds its case from live web sources
-2. **Rebuttals** — each side attacks the opponent's arguments
+- **PRO agent** — advocates for the topic with real web sources, persistent memory across all rounds
+- **CON agent** — argues against, with its own separate evidence pipeline and conversation history
+- **Judge agent** — reads both sides with zero prior context, delivers a scored verdict
+
+The debate runs across four rounds:
+
+1. **Opening statements** — each side builds its case from live-retrieved sources
+2. **Rebuttals** — each side attacks the opponent's arguments using its own memory of what it argued
 3. **Cross-examination** — each side interrogates the other with pointed questions
-4. **Closing statements** — final summaries
-5. **Judge verdict** — a neutral AI judge scores the debate and picks a winner
+4. **Closing statements** — final summaries referencing the full debate history
 
 You can also **debate the AI yourself** — choose your side, write your opening, and see if you can beat it.
 

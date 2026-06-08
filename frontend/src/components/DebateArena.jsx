@@ -30,7 +30,7 @@ function CrossExamSection({ pair, events, streaming }) {
           side={pair.qSide}
           round_name={pair.q}
           content={q ? q.content : streaming.content}
-          citations={[]}
+          citations={q ? q.citations : []}
           streaming={qStreaming}
         />
       )}
@@ -39,7 +39,7 @@ function CrossExamSection({ pair, events, streaming }) {
           side={pair.aSide}
           round_name={pair.a}
           content={a ? a.content : streaming.content}
-          citations={[]}
+          citations={a ? a.citations : []}
           streaming={aStreaming}
         />
       )}
