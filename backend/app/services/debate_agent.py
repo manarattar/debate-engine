@@ -195,12 +195,24 @@ async def generate_argument_streaming(
     chunks: list[dict],
     opponent_arguments: list[str] = None,
     persona: str = None,
+    history: list[dict] | None = None,
 ):
-    """Async generator: yields ("token", delta) then ("complete", Argument)."""
+    """Async generator: yields ("token", delta) then ("complete", Argument).
+
+    history is a mutable list of {"role": "user/assistant", "content": "..."}
+    entries for this side. It is appended in-place after each round so the
+    agent remembers its own previous arguments across the debate.
+    """
     context, citations = _build_source_context(chunks)
     system, user_prompt = _build_prompts(
         topic, side, round_name, context, opponent_arguments, persona
     )
+
+    # system + agent's own conversation history + current turn
+    messages = [{"role": "system", "content": system}]
+    if history:
+        messages.extend(history)
+    messages.append({"role": "user", "content": user_prompt})
 
     loop = asyncio.get_running_loop()
     queue: asyncio.Queue = asyncio.Queue()
@@ -214,10 +226,7 @@ async def generate_argument_streaming(
                 client = _make_client()
                 return client.chat.completions.create(
                     model=settings.model_name,
-                    messages=[
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": user_prompt},
-                    ],
+                    messages=messages,
                     temperature=0.7,
                     max_tokens=token_limit,
                     stream=True,
@@ -243,6 +252,10 @@ async def generate_argument_streaming(
             yield "token", data
             await asyncio.sleep(0.02)
         elif kind == "done":
+            # Persist this exchange so the agent remembers it next round
+            if history is not None:
+                history.append({"role": "user", "content": user_prompt})
+                history.append({"role": "assistant", "content": full_content})
             argument = Argument(
                 side=side,
                 round_name=round_name,

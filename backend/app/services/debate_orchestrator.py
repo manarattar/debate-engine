@@ -28,6 +28,7 @@ async def _stream_argument(
     chunks: list[dict],
     opponent_arguments: list[str] = None,
     persona: str = None,
+    history: list[dict] | None = None,
 ) -> AsyncGenerator[str, None]:
     """Stream an argument, yielding SSE chunks token by token."""
     side_str = side.value
@@ -35,7 +36,7 @@ async def _stream_argument(
 
     argument = None
     async for kind, data in generate_argument_streaming(
-        topic, side, round_name, chunks, opponent_arguments, persona
+        topic, side, round_name, chunks, opponent_arguments, persona, history
     ):
         if kind == "token":
             yield _sse(
@@ -68,6 +69,9 @@ async def run_debate(
     con_args: list[Argument] = []
     pro_sources = []
     con_sources = []
+    # Persistent conversation history per side — each side remembers its own arguments
+    pro_history: list[dict] = []
+    con_history: list[dict] = []
 
     try:
         # Step 1 — generate search queries
@@ -107,7 +111,12 @@ async def run_debate(
         pro_chunks = await _exec(loop, retrieve, debate_id, "pro", topic, 3)
         pro_opening = None
         async for chunk in _stream_argument(
-            topic, Side.pro, "opening", pro_chunks, persona=pro_persona
+            topic,
+            Side.pro,
+            "opening",
+            pro_chunks,
+            persona=pro_persona,
+            history=pro_history,
         ):
             yield chunk
             try:
@@ -130,7 +139,12 @@ async def run_debate(
         con_chunks = await _exec(loop, retrieve, debate_id, "con", topic, 3)
         con_opening = None
         async for chunk in _stream_argument(
-            topic, Side.con, "opening", con_chunks, persona=con_persona
+            topic,
+            Side.con,
+            "opening",
+            con_chunks,
+            persona=con_persona,
+            history=con_history,
         ):
             yield chunk
             try:
@@ -165,6 +179,7 @@ async def run_debate(
             pro_rebuttal_chunks,
             [con_opening.content] if con_opening else None,
             persona=pro_persona,
+            history=pro_history,
         ):
             yield chunk
             try:
@@ -199,6 +214,7 @@ async def run_debate(
             con_rebuttal_chunks,
             [pro_opening.content] if pro_opening else None,
             persona=con_persona,
+            history=con_history,
         ):
             yield chunk
             try:
@@ -228,6 +244,7 @@ async def run_debate(
             [],
             [a.content for a in con_args],
             persona=pro_persona,
+            history=pro_history,
         ):
             yield chunk
             try:
@@ -256,6 +273,7 @@ async def run_debate(
             [],
             [pro_questions_content] if pro_questions_content else None,
             persona=con_persona,
+            history=con_history,
         ):
             yield chunk
             try:
@@ -284,6 +302,7 @@ async def run_debate(
             [],
             [a.content for a in pro_args],
             persona=con_persona,
+            history=con_history,
         ):
             yield chunk
             try:
@@ -312,6 +331,7 @@ async def run_debate(
             [],
             [con_questions_content] if con_questions_content else None,
             persona=pro_persona,
+            history=pro_history,
         ):
             yield chunk
             try:
@@ -335,7 +355,13 @@ async def run_debate(
         )
         con_debate_so_far = [a.content for a in con_args]
         async for chunk in _stream_argument(
-            topic, Side.pro, "closing", [], con_debate_so_far, persona=pro_persona
+            topic,
+            Side.pro,
+            "closing",
+            [],
+            con_debate_so_far,
+            persona=pro_persona,
+            history=pro_history,
         ):
             yield chunk
             try:
@@ -358,7 +384,13 @@ async def run_debate(
         )
         pro_debate_so_far = [a.content for a in pro_args]
         async for chunk in _stream_argument(
-            topic, Side.con, "closing", [], pro_debate_so_far, persona=con_persona
+            topic,
+            Side.con,
+            "closing",
+            [],
+            pro_debate_so_far,
+            persona=con_persona,
+            history=con_history,
         ):
             yield chunk
             try:
