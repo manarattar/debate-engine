@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth, useUser, SignInButton, UserButton } from "@clerk/clerk-react";
 import TopicInput from "./components/TopicInput";
 import DebateArena from "./components/DebateArena";
@@ -277,6 +278,9 @@ export default function App() {
             <img src="/logo.svg" alt="Munazara" className="h-7" />
           </div>
           <div className="flex items-center gap-3 ml-auto">
+            <Link to="/about" className="text-slate-500 hover:text-slate-300 text-xs transition-colors hidden md:block">
+              About
+            </Link>
             {isSignedIn ? (
               <>
                 <span className="text-slate-500 text-xs hidden md:block">
