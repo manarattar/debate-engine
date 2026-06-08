@@ -76,6 +76,7 @@ export default function App() {
   const [reactions, setReactions] = useState({});  // {pro_opening: {likes, dislikes}, ...}
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
 
   // Wake the Render backend on mount (free tier spins down after inactivity)
   useEffect(() => {
@@ -262,6 +263,7 @@ export default function App() {
         currentTopic={topic}
         isOpen={historyOpen}
         onClose={() => setHistoryOpen(false)}
+        onHasContent={setSidebarVisible}
       />
 
       <div className="flex-1 flex flex-col">
@@ -457,6 +459,9 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* Mirror spacer — balances the sidebar so flex-1 stays viewport-centered on lg+ screens */}
+      {sidebarVisible && <div className="hidden lg:block w-64 shrink-0" aria-hidden="true" />}
 
       <DebateDrawer
         debateId={drawerDebateId}
