@@ -107,7 +107,7 @@ export default function App() {
   }, []);
 
   const handleShare = () => {
-    const url = `${window.location.origin}/?debate=${debateId}`;
+    const url = `${window.location.origin}/api/share?id=${debateId}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
