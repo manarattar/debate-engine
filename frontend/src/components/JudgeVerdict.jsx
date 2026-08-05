@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import Icon from "./Icon";
 
 const WINNER_STYLES = {
   pro: { label: "PRO WINS", color: "text-sky-400", border: "border-sky-500/30", bg: "" },
@@ -24,7 +25,7 @@ export default function JudgeVerdict({ verdict, winner, streaming = false }) {
     <div className={`border-t-2 border-b ${style.border} border-x-0 py-6 argument-judge transition-all duration-500`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <span className="text-slate-500 text-lg">⚖</span>
+          <span className="text-slate-500"><Icon name="scale" size={18} /></span>
           <div>
             <p className="text-slate-500 text-xs uppercase tracking-widest font-mono">Judge's Verdict</p>
             {/* Winner banner — slides in after streaming ends */}
@@ -74,6 +75,35 @@ export default function JudgeVerdict({ verdict, winner, streaming = false }) {
             </div>
           ))}
         </div>
+      )}
+
+      {!streaming && <VerdictFeedback winner={winner} />}
+    </div>
+  );
+}
+
+function VerdictFeedback({ winner }) {
+  const [rating, setRating] = useState(null);
+
+  const submit = useCallback((value) => {
+    setRating(value);
+    const log = JSON.parse(localStorage.getItem("debate_feedback") || "[]");
+    log.push({ winner, rating: value, timestamp: new Date().toISOString() });
+    localStorage.setItem("debate_feedback", JSON.stringify(log));
+  }, [winner]);
+
+  return (
+    <div className="mt-5 pt-4 border-t border-slate-800 flex items-center gap-3">
+      <span className="text-xs text-slate-500">Was this verdict fair?</span>
+      {rating === null ? (
+        <>
+          <button onClick={() => submit("up")} className="text-slate-500 hover:text-emerald-400 hover:scale-110 transition" title="Yes" aria-label="Fair"><Icon name="thumbsUp" size={17} /></button>
+          <button onClick={() => submit("down")} className="text-slate-500 hover:text-rose-400 hover:scale-110 transition" title="No" aria-label="Not fair"><Icon name="thumbsDown" size={17} /></button>
+        </>
+      ) : (
+        <span className="text-xs text-amber-400 font-medium">
+          {rating === "up" ? "Thanks!" : "Thanks — noted."}
+        </span>
       )}
     </div>
   );

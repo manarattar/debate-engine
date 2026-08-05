@@ -18,7 +18,7 @@ export default function PersonaPicker({ proPersona, conPersona, onChange }) {
   return (
     <div className="flex flex-col gap-3 w-full max-w-2xl">
       <p className="text-slate-500 text-sm text-center">
-        🎭 Optional: choose debate personas
+        Optional: choose debate personas
       </p>
 
       {/* Preset pairs */}

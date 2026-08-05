@@ -11,6 +11,7 @@ import DebateKnowledgeGraph from "./components/DebateKnowledgeGraph";
 import DebateDrawer from "./components/DebateDrawer";
 import { getDebate, getReactions } from "./api";
 import "./index.css";
+import Icon from "./components/Icon";
 
 function generateDebateId() {
   return crypto.randomUUID().replace(/-/g, "").slice(0, 8);
@@ -300,27 +301,35 @@ export default function App() {
         {phase === "idle" && (
           <>
             <div className="flex flex-col items-center">
-              {/* Mode toggle */}
-              <div className="flex gap-1 bg-slate-800 p-1 rounded-xl mt-8 mx-6">
+              {/* Mode cards */}
+              <div className="flex gap-3 mt-8 mx-6 w-full max-w-lg px-4">
                 <button
                   onClick={() => setDebateMode("ai")}
-                  className={`px-5 py-2 rounded-sm text-xs font-medium uppercase tracking-wide transition-colors
-                    ${debateMode === "ai" ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
+                  className={`flex-1 flex flex-col items-start gap-1 p-4 rounded-xl border text-left transition-all
+                    ${debateMode === "ai"
+                      ? "bg-slate-700 border-slate-500 text-white"
+                      : "bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200"}`}
                 >
-                  ⚖ Watch AI Debate
+                  <Icon name="scale" size={22} />
+                  <span className="text-sm font-semibold uppercase tracking-wide">Watch AI Debate</span>
+                  <span className="text-xs opacity-70">Two AI agents argue both sides with live sources</span>
                 </button>
                 <button
                   onClick={() => setDebateMode("human")}
-                  className={`px-5 py-2 rounded-sm text-xs font-medium uppercase tracking-wide transition-colors
-                    ${debateMode === "human" ? "bg-amber-700 text-white" : "text-slate-500 hover:text-slate-300"}`}
+                  className={`flex-1 flex flex-col items-start gap-1 p-4 rounded-xl border text-left transition-all
+                    ${debateMode === "human"
+                      ? "bg-amber-900/60 border-amber-600 text-white"
+                      : "bg-slate-900 border-slate-700 text-slate-400 hover:border-amber-700 hover:text-slate-200"}`}
                 >
-                  🧑 Debate the AI
+                  <Icon name="user" size={22} />
+                  <span className="text-sm font-semibold uppercase tracking-wide">Debate the AI</span>
+                  <span className="text-xs opacity-70">Write your opening, the AI fires back — see if you can win</span>
                 </button>
               </div>
               <TopicInput
                 onSubmit={handleSubmit}
                 isLoading={false}
-                submitLabel={debateMode === "human" ? "🧑 Choose My Side →" : undefined}
+                submitLabel={debateMode === "human" ? "Choose My Side →" : undefined}
               />
             </div>
             <DebateKnowledgeGraph onDebateSelect={(id) => setDrawerDebateId(id)} />
@@ -340,7 +349,7 @@ export default function App() {
               onClick={() => handleStartDebate(pendingVoteTopic)}
               className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition-colors"
             >
-              ⚔️ Start Debate
+              <span className="inline-flex items-center gap-2"><Icon name="swords" size={17} />Start Debate</span>
             </button>
             <button onClick={handleReset} className="text-slate-600 hover:text-slate-400 text-sm transition-colors">
               ← Back
@@ -386,7 +395,7 @@ export default function App() {
                     className="text-sm px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors"
                     title="Run the same topic and personas again"
                   >
-                    ⚔️ Rematch
+                    <span className="inline-flex items-center gap-1.5"><Icon name="swords" size={15} />Rematch</span>
                   </button>
                 )}
                 {debateId && (
@@ -403,7 +412,7 @@ export default function App() {
                     onClick={handleShare}
                     className="text-sm px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors"
                   >
-                    {copied ? "✓ Copied!" : "🔗 Share"}
+                    {copied ? <span className="inline-flex items-center gap-1.5">✓ Copied!</span> : <span className="inline-flex items-center gap-1.5"><Icon name="link" size={14} />Share</span>}
                   </button>
                 )}
                 <button

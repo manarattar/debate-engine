@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { runFactCheck } from "../api";
+import Icon from "./Icon";
 
 const VERDICT_CONFIG = {
   verified:     { label: "Verified",      color: "text-sky-400",     bg: "bg-sky-900/40 border-sky-700",        icon: "✓" },
@@ -37,7 +38,7 @@ export default function FactCheckPanel({ debateId }) {
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-700">
         <div className="flex items-center gap-2.5">
-          <span className="text-lg">🔍</span>
+          <Icon name="search" size={17} />
           <h3 className="text-sm font-semibold text-slate-200">Fact Check</h3>
           {state === "done" && report && (
             <span className="text-xs text-slate-500">{report.claims.length} claims verified</span>

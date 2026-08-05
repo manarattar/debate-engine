@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getHistory, getLeaderboard } from "../api";
+import Icon from "./Icon";
 
 const WINNER_BADGE = {
   pro: "bg-sky-500/20 text-sky-400 border-sky-500/30",
@@ -13,8 +14,8 @@ const WINNER_ICON = { pro: "⬆", con: "⬇", tie: "⟺", unknown: "?" };
 function ViewBadge({ count }) {
   if (!count) return null;
   return (
-    <span className="text-xs text-slate-600 tabular-nums">
-      👁 {count}
+    <span className="text-xs text-slate-600 tabular-nums inline-flex items-center gap-1">
+      <Icon name="eye" size={12} /> {count}
     </span>
   );
 }
@@ -124,9 +125,9 @@ export default function HistoryPanel({ onSelect, currentTopic, isOpen, onClose }
                   >
                     {d.winner?.toUpperCase()}
                   </span>
-                  <span className="text-xs text-slate-600">👁 {d.views}</span>
-                  <span className="text-xs text-slate-600">🗳 {d.votes}</span>
-                  <span className="text-xs text-slate-600">👍 {d.reactions}</span>
+                  <span className="text-xs text-slate-600 inline-flex items-center gap-1"><Icon name="eye" size={12} /> {d.views}</span>
+                  <span className="text-xs text-slate-600 inline-flex items-center gap-1"><Icon name="vote" size={12} /> {d.votes}</span>
+                  <span className="text-xs text-slate-600 inline-flex items-center gap-1"><Icon name="thumbsUp" size={12} /> {d.reactions}</span>
                 </div>
               </div>
             </div>
@@ -166,7 +167,7 @@ export default function HistoryPanel({ onSelect, currentTopic, isOpen, onClose }
               : "text-slate-500 hover:text-slate-300"
           }`}
         >
-          🏆 Top
+          <span className="inline-flex items-center gap-1.5"><Icon name="trophy" size={13} />Top</span>
         </button>
       </div>
     </div>

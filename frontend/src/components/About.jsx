@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Icon from "./Icon";
 
 const STACK = [
   { layer: "Language Model", items: ["gpt-4o-mini", "Streaming inference", "Prompt engineering", "Structured output parsing"] },
@@ -9,42 +10,42 @@ const STACK = [
 
 const FEATURES = [
   {
-    icon: "⚔️",
-    title: "AI vs AI",
-    desc: "Watch two AI personas argue opposite sides of any topic across opening, rebuttal, and closing rounds.",
+    icon: "swords",
+    title: "Multi-Agent Debate",
+    desc: "Three specialized AI agents — PRO advocate, CON advocate, and impartial Judge — each with persistent memory and a dedicated evidence pipeline. The PRO and CON agents never share context; the Judge reads both sides only at verdict time.",
   },
   {
-    icon: "🧑",
+    icon: "user",
     title: "Human vs AI",
     desc: "Pick a side and write your own arguments. The AI responds to your points round by round.",
   },
   {
-    icon: "📚",
+    icon: "book",
     title: "RAG-Sourced Evidence",
     desc: "Every argument is backed by real web sources retrieved and ranked in real time via Tavily.",
   },
   {
-    icon: "⚖️",
+    icon: "scale",
     title: "AI Judge",
-    desc: "After all rounds complete, the same LLM reads both sides' full arguments and all retrieved sources, then delivers a reasoned verdict and round-by-round scores.",
+    desc: "A dedicated Judge agent — operating with no prior context from either side — evaluates all arguments and retrieved evidence after the final round, then delivers a structured verdict with round-by-round scores.",
   },
   {
-    icon: "🔍",
+    icon: "search",
     title: "Fact Checking",
     desc: "Post-debate fact-check panel verifies key claims from both sides against live sources.",
   },
   {
-    icon: "🗳️",
+    icon: "vote",
     title: "Vote & React",
     desc: "Vote before and after each debate to track how arguments shifted your opinion. React to individual rounds.",
   },
   {
-    icon: "🌐",
+    icon: "globe",
     title: "Knowledge Graph",
     desc: "Every debate is mapped into an interactive force graph — explore topics and domains across all debates.",
   },
   {
-    icon: "🏆",
+    icon: "trophy",
     title: "Leaderboard",
     desc: "Most-viewed and most-voted debates surface to the top. History panel lets you revisit past debates.",
   },
@@ -75,7 +76,7 @@ export default function About() {
         <div className="text-center mb-20">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-medium mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            RAG · gpt-4o-mini · Built by Manar Attar
+            Multi-Agent · RAG · gpt-4o-mini · Built by Manar Attar
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
             What is{" "}
@@ -99,7 +100,7 @@ export default function About() {
                 key={f.title}
                 className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 flex gap-4"
               >
-                <span className="text-2xl shrink-0 mt-0.5">{f.icon}</span>
+                <span className="shrink-0 mt-0.5 text-slate-400"><Icon name={f.icon} size={24} /></span>
                 <div>
                   <p className="text-sm font-semibold text-white mb-1">{f.title}</p>
                   <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
@@ -117,7 +118,7 @@ export default function About() {
               { step: "01", title: "Enter a topic", desc: "Type any debate topic — political, philosophical, scientific, or everyday." },
               { step: "02", title: "Search strategy", desc: "The LLM generates targeted search queries for both the PRO and CON sides independently." },
               { step: "03", title: "Evidence indexed", desc: "Tavily fetches real-time web results for each side. Content is chunked and indexed in ChromaDB as two separate vector stores." },
-              { step: "04", title: "4-round debate", desc: "Opening statements → Rebuttals → Cross-examination (questions + answers from both sides) → Closing statements. Each argument is retrieved from the relevant vector store and streamed live token by token." },
+              { step: "04", title: "4-round debate", desc: "Opening statements → Rebuttals → Cross-examination (questions + answers from both sides) → Closing statements. Each agent maintains persistent memory of its own prior arguments — rebuttals and closing statements are coherent continuations, not isolated responses. Arguments are streamed live token by token." },
               { step: "05", title: "Judge deliberates", desc: "After all rounds, the LLM reads every argument alongside retrieved evidence and delivers a scored verdict with citations." },
               { step: "06", title: "You decide", desc: "Vote, react to individual rounds, fact-check claims against live sources, and explore the debate in the knowledge graph." },
             ].map((s, i, arr) => (

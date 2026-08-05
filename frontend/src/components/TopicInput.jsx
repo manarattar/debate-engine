@@ -4,7 +4,7 @@ import PersonaPicker from "./PersonaPicker";
 
 const TOPIC_CATEGORIES = [
   {
-    label: "🤖 Technology",
+    label: "Technology",
     topics: [
       "AI will replace software engineers",
       "Social media does more harm than good",
@@ -12,7 +12,7 @@ const TOPIC_CATEGORIES = [
     ],
   },
   {
-    label: "🌍 Society",
+    label: "Society",
     topics: [
       "Universal Basic Income should be implemented",
       "Remote work is better than office work",
@@ -20,7 +20,7 @@ const TOPIC_CATEGORIES = [
     ],
   },
   {
-    label: "⚡ Energy & Climate",
+    label: "Energy & Climate",
     topics: [
       "Nuclear energy is the best solution to climate change",
       "Electric vehicles will save the planet",
@@ -28,7 +28,7 @@ const TOPIC_CATEGORIES = [
     ],
   },
   {
-    label: "🏛 Policy",
+    label: "Policy",
     topics: [
       "The death penalty should be abolished worldwide",
       "Open borders would benefit the global economy",
@@ -90,7 +90,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
             {isLoading ? (
               <><span className="animate-spin">⟳</span> Running debate...</>
             ) : (
-              submitLabel || "⚖ Start Debate"
+              submitLabel || "Start Debate"
             )}
           </button>
         ) : (
@@ -110,7 +110,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
         onClick={() => setShowPersonas((v) => !v)}
         className="text-sm text-slate-500 hover:text-amber-400 transition-colors"
       >
-        🎭 {showPersonas ? "Hide personas" : "Add debate personas (optional)"}
+        {showPersonas ? "Hide personas" : "Add debate personas (optional)"}
       </button>
 
       {showPersonas && (

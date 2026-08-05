@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth, SignInButton } from "@clerk/clerk-react";
 import { submitReaction } from "../api";
+import Icon from "./Icon";
 
 const SIDE_STYLES = {
   pro: {
@@ -115,7 +116,7 @@ function ReactionButtons({ debateId, side, round_name, initialReactions, styles 
             ? styles.reactionLike
             : "border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500"}`}
       >
-        👍 {likes > 0 && <span>{likes}</span>}
+        <Icon name="thumbsUp" size={13} /> {likes > 0 && <span>{likes}</span>}
       </button>
       <button
         onClick={() => handleReact("dislike")}
@@ -124,7 +125,7 @@ function ReactionButtons({ debateId, side, round_name, initialReactions, styles 
             ? styles.reactionDislike
             : "border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500"}`}
       >
-        👎 {dislikes > 0 && <span>{dislikes}</span>}
+        <Icon name="thumbsDown" size={13} /> {dislikes > 0 && <span>{dislikes}</span>}
       </button>
     </div>
   );

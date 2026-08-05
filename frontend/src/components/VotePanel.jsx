@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth, SignInButton } from "@clerk/clerk-react";
 import { getVotes, submitVote } from "../api";
+import Icon from "./Icon";
 
 function getSessionId() {
   let id = sessionStorage.getItem("debate_session_id");
@@ -66,7 +67,7 @@ export default function VotePanel({ debateId, phase, topic }) {
   return (
     <div className="border border-amber-500/20 bg-amber-950/20 rounded-xl p-4 flex flex-col gap-3">
       <p className="text-sm font-medium text-amber-300 text-center">
-        {phase === "before" ? "🗳 Who do you think will win?" : "🏆 Who won the debate?"}
+        <span className="inline-flex items-center justify-center gap-2"><Icon name={phase === "before" ? "vote" : "trophy"} size={16} />{phase === "before" ? "Who do you think will win?" : "Who won the debate?"}</span>
       </p>
 
       {!voted ? (

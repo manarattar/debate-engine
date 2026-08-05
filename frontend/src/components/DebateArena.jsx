@@ -1,6 +1,7 @@
 import ArgumentCard from "./ArgumentCard";
 import JudgeVerdict from "./JudgeVerdict";
 import StatusBar from "./StatusBar";
+import Icon from "./Icon";
 
 const MAIN_ROUNDS = ["opening", "rebuttal", "closing"];
 const CROSS_PAIRS = [
@@ -21,7 +22,7 @@ function CrossExamSection({ pair, events, streaming }) {
       <div className="flex items-center gap-3">
         <div className="h-px flex-1 bg-amber-800/30" />
         <span className="text-xs text-amber-400 uppercase tracking-widest font-medium px-2">
-          ⚡ {pair.label}
+          {pair.label}
         </span>
         <div className="h-px flex-1 bg-amber-800/30" />
       </div>
@@ -105,7 +106,7 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
         </h2>
         <div className="mt-3 flex justify-center gap-2 items-center">
           <div className="h-px w-12 bg-slate-700" />
-          <span className="text-slate-700 text-xs font-mono">⚖</span>
+          <span className="text-slate-700"><Icon name="scale" size={13} /></span>
           <div className="h-px w-12 bg-slate-700" />
         </div>
       </div>
@@ -162,7 +163,7 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-slate-700" />
               <span className="text-xs text-slate-400 uppercase tracking-widest font-bold px-2">
-                ⚡ Cross-Examination
+                Cross-Examination
               </span>
               <div className="h-px flex-1 bg-slate-700" />
             </div>

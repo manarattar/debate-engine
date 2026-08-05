@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getDebate } from "../api";
+import Icon from "./Icon";
 
 const WINNER_STYLES = {
   pro: ["Pro wins", "bg-sky-950 text-sky-400 border-sky-800"],
@@ -91,8 +92,8 @@ export default function DebateDrawer({ debateId, onClose, onViewFull }) {
                 </div>
               )}
 
-              <p className="text-slate-600 text-xs">
-                👁 {debate.view_count ?? 0} views
+              <p className="text-slate-600 text-xs inline-flex items-center gap-1">
+                <Icon name="eye" size={12} /> {debate.view_count ?? 0} views
               </p>
             </>
           )}
