@@ -2,7 +2,7 @@
 
 **A multi-agent debate platform where three specialized AI agents argue both sides of any topic using live web sources, then an independent judge delivers a scored verdict.**
 
-[Live app](https://munazara.manarattar.com) · [About](https://munazara.manarattar.com/about) · [API docs](https://munazara-api.onrender.com/docs)
+[Live app](https://munazara.manarattar.com) · [About](https://munazara.manarattar.com/about)
 
 ---
 
@@ -47,7 +47,7 @@ You can also **debate the AI yourself** — choose your side, write your opening
 | Web search | Tavily API |
 | Vector store | ChromaDB (per-debate, ephemeral) |
 | Database | PostgreSQL (Render) |
-| Deployment | Vercel (frontend) + Render (backend) |
+| Deployment | Self-hosted on a Contabo VPS (Docker Compose + Caddy) — see DEPLOYMENT.md |
 | Error monitoring | Sentry |
 
 ---
@@ -118,21 +118,14 @@ npm run dev
    - `SENTRY_DSN` (optional)
 5. Deploy — Render will build the Docker container and provision a Postgres database
 
-### 6. Deploy frontend to Vercel
+### 6. Deploy
 
-The frontend is already linked to Vercel. Add these environment variables in the Vercel dashboard:
+Frontend and backend both run on a single VPS behind Caddy, which serves the
+built SPA and proxies `/api/*` to the backend on the same origin. There is no
+Vercel or Render involved.
 
-| Variable | Value |
-|----------|-------|
-| `VITE_CLERK_PUBLISHABLE_KEY` | `pk_live_...` (your Clerk production key) |
-| `VITE_API_URL` | Your Render backend URL |
-| `VITE_SENTRY_DSN` | Your Sentry React DSN (optional) |
-
-Then: `cd frontend && npx vercel --prod`
-
-### 7. Custom domain
-
-In Vercel → Project Settings → Domains → add `munazara.manarattar.com` and follow the DNS instructions.
+Full instructions, including the Clerk build-time trap, are in
+[DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 
