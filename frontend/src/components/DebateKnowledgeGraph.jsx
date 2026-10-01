@@ -41,7 +41,26 @@ function getColor(domain) {
   return DYNAMIC_PALETTE[idx];
 }
 
+function cssVar(name, fallback) {
+  try {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function useThemeKey() {
+  const [key, setKey] = useState(() => document.documentElement.getAttribute("data-theme") || "light");
+  useEffect(() => {
+    const obs = new MutationObserver(() => setKey(document.documentElement.getAttribute("data-theme") || "light"));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  return key;
+}
+
 export default function DebateKnowledgeGraph({ onDebateSelect }) {
+  const themeKey = useThemeKey();
   const [graphData, setGraphData] = useState(null);
   const [domainDegree, setDomainDegree] = useState({});
   const [hoveredNode, setHoveredNode] = useState(null);
@@ -127,7 +146,7 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
         // Node dot — colored by domain
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
-        ctx.fillStyle = isHovered ? "#ffffff" : color + "bb";
+        ctx.fillStyle = isHovered ? cssVar("--n-50", "#14151a") : color + "bb";
         ctx.fill();
 
         // Always-visible short label below the node
@@ -138,7 +157,7 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
         ctx.font = `${isHovered ? "bold " : ""}3.5px sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.fillStyle = isHovered ? "#e2e8f0" : "#64748b";
+        ctx.fillStyle = isHovered ? cssVar("--n-50", "#14151a") : cssVar("--n-500", "#66635b");
         ctx.fillText(short, node.x, node.y + r + 2);
 
         // Full label tooltip above on hover
@@ -155,16 +174,16 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
           const bw = tw + pad * 2;
           const bh = 12;
 
-          ctx.fillStyle = "#1e1b4b";
+          ctx.fillStyle = cssVar("--n-800", "#ebe9e2");
           ctx.fillRect(bx, by, bw, bh);
 
-          ctx.fillStyle = "#e2e8f0";
+          ctx.fillStyle = cssVar("--n-50", "#14151a");
           ctx.textBaseline = "middle";
           ctx.fillText(full, node.x, by + bh / 2);
         }
       }
     },
-    [hoveredNode]
+    [hoveredNode, themeKey]
   );
 
   const linkColor = useCallback(
@@ -206,6 +225,7 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
   return (
     <div
       ref={outerRef}
+      data-tour="graph"
       className="w-full flex flex-col items-center gap-4 py-8"
       style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease" }}
     >
@@ -247,7 +267,7 @@ export default function DebateKnowledgeGraph({ onDebateSelect }) {
             graphData={data}
             width={width}
             height={460}
-            backgroundColor="#0a0a0f"
+            backgroundColor={cssVar("--page", "#f6f5f1")}
             nodeCanvasObject={paintNode}
             nodeCanvasObjectMode={() => "replace"}
             nodeVal={nodeVal}

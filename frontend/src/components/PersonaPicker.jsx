@@ -29,7 +29,7 @@ export default function PersonaPicker({ proPersona, conPersona, onChange }) {
             onClick={() => handlePreset(pair)}
             className={`text-xs px-3 py-1.5 rounded-full border transition-colors
               ${proPersona === pair.pro
-                ? "bg-amber-700 border-amber-500 text-white"
+                ? "bg-amber-700 border-amber-500 text-onaccent"
                 : "bg-slate-800 border-slate-600 text-slate-300 hover:border-amber-500"
               }`}
           >

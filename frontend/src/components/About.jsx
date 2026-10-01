@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import Icon from "./Icon";
+import Logo from "./Logo";
+import ThemeToggle from "./ThemeToggle";
 
 const STACK = [
   { layer: "Language Model", items: ["gpt-4o-mini", "Streaming inference", "Prompt engineering", "Structured output parsing"] },
@@ -53,20 +55,23 @@ const FEATURES = [
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-slate-200" style={{ fontFamily: "system-ui, sans-serif" }}>
+    <div className="min-h-screen bg-page text-slate-200">
 
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-800 bg-[#0a0a0f]/90 backdrop-blur">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-800 bg-page/90 backdrop-blur">
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.svg" alt="Munazara" className="h-6" />
+            <Logo className="h-6" />
           </Link>
+          <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Link
             to="/"
-            className="text-sm px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors font-medium"
+            className="text-sm px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-onaccent rounded-lg transition-colors font-medium"
           >
             Open App
           </Link>
+          </div>
         </div>
       </nav>
 
@@ -80,7 +85,7 @@ export default function About() {
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
             What is{" "}
-            <span className="bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
+            <span className="text-amber-500">
               Munazara?
             </span>
           </h1>
@@ -170,7 +175,7 @@ export default function About() {
               href="https://manarattar.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition-colors"
+              className="text-sm px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-onaccent font-medium transition-colors"
             >
               Portfolio
             </a>

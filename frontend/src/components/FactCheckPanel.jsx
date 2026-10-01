@@ -34,7 +34,7 @@ export default function FactCheckPanel({ debateId }) {
   }
 
   return (
-    <div className="mx-4 mb-6 rounded-xl border border-slate-700 bg-slate-900/60 overflow-hidden">
+    <div data-tour="factcheck" className="mx-4 mb-6 rounded-xl border border-slate-700 bg-slate-900/60 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-700">
         <div className="flex items-center gap-2.5">
@@ -47,7 +47,7 @@ export default function FactCheckPanel({ debateId }) {
         {state === "idle" && (
           <button
             onClick={handleRun}
-            className="text-xs px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-medium transition-colors"
+            className="text-xs px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-onaccent font-medium transition-colors"
           >
             Run Fact Check
           </button>

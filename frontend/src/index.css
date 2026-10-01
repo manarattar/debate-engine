@@ -1,15 +1,233 @@
 @import "tailwindcss";
 
-html, body {
+/*
+ * Two podiums: a debate has two sides, each in its own ink.
+ * Side A (PRO) is indigo, side B (CON) is ochre, the moderator is neutral ink.
+ * The existing utility classes (slate / sky / rose / amber) are remapped onto the
+ * tokens below, so one palette swap restyles the whole app, light or dark.
+ * Light is the default; dark only applies under :root[data-theme="dark"].
+ */
+:root {
+  color-scheme: light;
+
+  --page: #f6f5f1;
+  --sheet: #ffffff;
+  --ink: #17181d;
+
+  /* neutral scale: 950 = page, 900 = sheet, 50 = strongest ink */
+  --n-950: #f6f5f1;
+  --n-900: #ffffff;
+  --n-800: #ebe9e2;
+  --n-700: #dad7cc;
+  --n-600: #75726a;
+  --n-500: #66635b;
+  --n-400: #4f4d46;
+  --n-300: #3a3935;
+  --n-200: #2a2926;
+  --n-100: #1c1d22;
+  --n-50: #14151a;
+
+  /* side A: indigo ink */
+  --a-300: #312e81;
+  --a-400: #3b36b8;
+  --a-500: #4a45d6;
+  --a-600: #5b57e0;
+  --a-700: #a5a8f0;
+  --a-800: #c9cbf6;
+  --a-900: #e1e2fa;
+  --a-950: #eff0fc;
+
+  /* side B: ochre ink */
+  --b-300: #6e4304;
+  --b-400: #855204;
+  --b-500: #a0690a;
+  --b-600: #b57c1a;
+  --b-700: #dbb872;
+  --b-800: #ead3a1;
+  --b-900: #f5e8c8;
+  --b-950: #fbf4e3;
+
+  /* moderator / actions: near-black ink */
+  --m-300: #2c2e36;
+  --m-400: #262830;
+  --m-500: #474a56;
+  --m-600: #1f2128;
+  --m-700: #2c2f38;
+  --m-800: #c9cbd3;
+  --m-900: #e6e7ec;
+  --m-950: #f1f2f5;
+  --blue-800: #c7d6fb;
+  --blue-900: #e3ecfe;
+  --on-accent: #ffffff;
+
+  --red-300: #8a1c13;
+  --red-400: #b42318;
+  --red-700: #efb4ad;
+  --red-900: #fbe3e0;
+  --yellow-400: #7d5f00;
+  --yellow-500: #94700a;
+  --yellow-700: #e3cf86;
+  --yellow-900: #f6edc4;
+  --green-400: #17693a;
+  --blue-300: #1d3f9f;
+  --blue-400: #2748b8;
+
+  --scrim: rgba(18, 19, 24, 0.5);
+  --font-ui: "Readex Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-count: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --page: #0e0f14;
+  --sheet: #16171e;
+  --ink: #eceef3;
+
+  --n-950: #0e0f14;
+  --n-900: #16171e;
+  --n-800: #20222b;
+  --n-700: #2c2f3a;
+  --n-600: #6a6f80;
+  --n-500: #8c91a3;
+  --n-400: #a7acbc;
+  --n-300: #c3c7d3;
+  --n-200: #dadde6;
+  --n-100: #eceef3;
+  --n-50: #f5f6fa;
+
+  --a-300: #c7d2fe;
+  --a-400: #a5b4fc;
+  --a-500: #818cf8;
+  --a-600: #6366f1;
+  --a-700: #3f3b94;
+  --a-800: #2e2b6e;
+  --a-900: #1f1d4a;
+  --a-950: #151433;
+
+  --b-300: #f3d48a;
+  --b-400: #e6b95a;
+  --b-500: #d9a23a;
+  --b-600: #c28a1f;
+  --b-700: #7a5512;
+  --b-800: #5a3f0e;
+  --b-900: #3a2a0a;
+  --b-950: #241a07;
+
+  --m-300: #f1ece0;
+  --m-400: #e6dfcc;
+  --m-500: #b9b3a0;
+  --m-600: #e3dcc8;
+  --m-700: #cfc8b3;
+  --m-800: #4a4638;
+  --m-900: #2f2d24;
+  --m-950: #1a1a16;
+  --blue-800: #1e3a8a;
+  --blue-900: #172554;
+  --on-accent: #14151a;
+
+  --red-300: #fca5a5;
+  --red-400: #f87171;
+  --red-700: #7f1d1d;
+  --red-900: #3b1313;
+  --yellow-400: #facc15;
+  --yellow-500: #eab308;
+  --yellow-700: #854d0e;
+  --yellow-900: #3b2a07;
+  --green-400: #34d399;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+
+  --scrim: rgba(0, 0, 0, 0.62);
+}
+
+@theme inline {
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-count);
+
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  --radius-2xl: 8px;
+
+  --color-white: var(--n-50);
+  --color-onaccent: var(--on-accent);
+  --color-page: var(--page);
+  --color-sheet: var(--sheet);
+
+  --color-slate-50: var(--n-50);
+  --color-slate-100: var(--n-100);
+  --color-slate-200: var(--n-200);
+  --color-slate-300: var(--n-300);
+  --color-slate-400: var(--n-400);
+  --color-slate-500: var(--n-500);
+  --color-slate-600: var(--n-600);
+  --color-slate-700: var(--n-700);
+  --color-slate-800: var(--n-800);
+  --color-slate-900: var(--n-900);
+  --color-slate-950: var(--n-950);
+
+  --color-sky-300: var(--a-300);
+  --color-sky-400: var(--a-400);
+  --color-sky-500: var(--a-500);
+  --color-sky-600: var(--a-600);
+  --color-sky-700: var(--a-700);
+  --color-sky-800: var(--a-800);
+  --color-sky-900: var(--a-900);
+  --color-sky-950: var(--a-950);
+  --color-blue-300: var(--blue-300);
+  --color-blue-400: var(--blue-400);
+  --color-indigo-500: var(--a-500);
+  --color-indigo-600: var(--a-600);
+
+  --color-rose-300: var(--b-300);
+  --color-rose-400: var(--b-400);
+  --color-rose-500: var(--b-500);
+  --color-rose-600: var(--b-600);
+  --color-rose-700: var(--b-700);
+  --color-rose-800: var(--b-800);
+  --color-rose-900: var(--b-900);
+  --color-rose-950: var(--b-950);
+
+  --color-amber-300: var(--m-300);
+  --color-amber-400: var(--m-400);
+  --color-amber-500: var(--m-500);
+  --color-amber-600: var(--m-600);
+  --color-amber-700: var(--m-700);
+  --color-amber-800: var(--m-800);
+  --color-amber-900: var(--m-900);
+  --color-amber-950: var(--m-950);
+  --color-blue-800: var(--blue-800);
+  --color-blue-900: var(--blue-900);
+
+  --color-red-300: var(--red-300);
+  --color-red-400: var(--red-400);
+  --color-red-700: var(--red-700);
+  --color-red-900: var(--red-900);
+  --color-yellow-400: var(--yellow-400);
+  --color-yellow-500: var(--yellow-500);
+  --color-yellow-700: var(--yellow-700);
+  --color-yellow-900: var(--yellow-900);
+  --color-emerald-400: var(--green-400);
+}
+
+html,
+body {
   margin: 0;
   overflow-x: hidden;
-  background: #0a0a0f;
-  color: #e2e8f0;
-  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
   min-height: 100vh;
+}
+
+:focus-visible {
+  outline: 2px solid var(--m-500);
+  outline-offset: 2px;
 }
 
 @keyframes slideInLeft {
@@ -30,3 +248,60 @@ html, body {
 .argument-pro  { animation: slideInLeft  0.35s ease forwards; }
 .argument-con  { animation: slideInRight 0.35s ease forwards; }
 .argument-judge { animation: fadeUp      0.4s ease forwards; }
+
+/* Tour tokens */
+:root {
+  --tour-surface: var(--sheet);
+  --tour-ink: var(--n-100);
+  --tour-body: var(--n-400);
+  --tour-muted: var(--n-500);
+  --tour-rule: var(--n-700);
+  --tour-scrim: var(--scrim);
+  --tour-accent: var(--m-600);
+  --tour-on-accent: var(--on-accent);
+  --tour-radius: 6px;
+  --tour-heading-font: var(--font-ui);
+  --tour-font: var(--font-ui);
+}
+
+/* Crash screen */
+.crash {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--page);
+  color: var(--ink);
+}
+
+.crash-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 28px 24px;
+  background: var(--sheet);
+  border: 1px solid var(--n-700);
+  border-top: 4px solid var(--b-500);
+  border-radius: 6px;
+}
+
+.crash-card h1 { margin: 0; font-size: 22px; font-weight: 600; }
+.crash-card p { margin: 8px 0 0; font-size: 14px; line-height: 1.55; color: var(--n-400); }
+.crash-card .crash-detail {
+  font-family: var(--font-count);
+  font-size: 12px;
+  color: var(--n-500);
+  overflow-wrap: anywhere;
+}
+.crash-card button {
+  margin-top: 18px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--m-600);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth, useUser, SignInButton, UserButton } from "@clerk/clerk-react";
+import { useAuth, SignInButton, UserButton } from "@clerk/clerk-react";
 import TopicInput from "./components/TopicInput";
 import DebateArena from "./components/DebateArena";
 import HumanDebatePage from "./components/HumanDebatePage";
@@ -12,6 +12,64 @@ import DebateDrawer from "./components/DebateDrawer";
 import { getDebate, getReactions } from "./api";
 import "./index.css";
 import Icon from "./components/Icon";
+import Logo from "./components/Logo";
+import ThemeToggle from "./components/ThemeToggle";
+import Onboarding, { hasSeenTour } from "./components/Onboarding";
+
+const LANDING_KEY = "munazara.onboarded.v1";
+const DEBATE_KEY = "munazara.debate-tour.v1";
+
+const LANDING_STEPS = [
+  { target: "mode", title: "Pick how to debate", body: "Watch two AI debaters argue a topic, or write your own opening and debate the AI." },
+  { target: "topic", title: "Give it a topic", body: "Type any claim, or tap one of the examples below. You need to sign in before a debate can start." },
+  { target: "personas", title: "Optional personas", body: "Give each side a character, such as an economist against an activist." },
+  { target: null, title: "Both sides, live", body: "Once started, PRO and CON argue side by side with sources, then cross-examine each other. Nothing runs until you press Start." },
+  { target: null, title: "Checks and a verdict", body: "After the final round a judge picks a winner, you can vote, and a fact-check can test the claims that were made." },
+  { target: "graph", title: "The knowledge graph", body: "Every finished debate joins this map of topics. Click a dot to open that debate." },
+];
+
+const DEBATE_STEPS = [
+  { target: "arena", title: "The two podiums", body: "PRO speaks on the left in indigo, CON on the right in ochre. Each card shows its round and sources." },
+  { target: "verdict", title: "The judge's ruling", body: "The judge scores both sides and names a winner with its reasons." },
+  { target: "vote", title: "Your vote", body: "Say who convinced you. Votes feed the leaderboard." },
+  { target: "factcheck", title: "Fact-check", body: "Run an independent check on the claims made. It uses a separate model call, so it only runs when you press it." },
+  { target: null, title: "Back to the map", body: "Press New Debate to return home, where this debate now appears in the knowledge graph." },
+];
+
+function MenuButton({ onHistory, onTour }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const esc = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", away);
+    document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("mousedown", away); document.removeEventListener("keydown", esc); };
+  }, [open]);
+  const item = "block w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-800 hover:text-white";
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-9 items-center gap-1.5 rounded-md border border-slate-700 px-3 text-sm text-slate-300 hover:border-slate-500 hover:text-white"
+      >
+        Menu
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-md border border-slate-700 bg-slate-900 shadow-lg">
+          <button role="menuitem" className={`${item} md:hidden`} onClick={() => { setOpen(false); onHistory(); }}>Debates</button>
+          <Link role="menuitem" to="/about" className={item} onClick={() => setOpen(false)}>About</Link>
+          <button role="menuitem" className={item} onClick={() => { setOpen(false); onTour(); }}>How it works</button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function generateDebateId() {
   return crypto.randomUUID().replace(/-/g, "").slice(0, 8);
@@ -59,7 +117,6 @@ async function* streamDebateFetch(topic, debateId, proPersona, conPersona, token
 
 export default function App() {
   const { isSignedIn, getToken } = useAuth();
-  const { user } = useUser();
   const [debateMode, setDebateMode] = useState("ai"); // "ai" | "human"
   const [phase, setPhase] = useState("idle");
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -78,6 +135,7 @@ export default function App() {
   const [reactions, setReactions] = useState({});  // {pro_opening: {likes, dislikes}, ...}
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [tour, setTour] = useState(() => (hasSeenTour(LANDING_KEY) ? null : "landing"));
 
   // Wake the Render backend on mount (free tier spins down after inactivity)
   useEffect(() => {
@@ -165,6 +223,7 @@ export default function App() {
           setScores(msg.data);
         } else if (msg.type === "complete") {
           setPhase("complete");
+          if (!hasSeenTour(DEBATE_KEY)) setTimeout(() => setTour("debate"), 600);
           if (window._refreshDebateHistory) window._refreshDebateHistory();
           getReactions(debateId).then((r) => setReactions(r.reactions || {})).catch(() => {});
         } else if (msg.type === "error") {
@@ -258,7 +317,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex">
+    <div className="min-h-screen bg-page flex">
       <HistoryPanel
         onSelect={handleHistorySelect}
         currentTopic={topic}
@@ -266,32 +325,17 @@ export default function App() {
         onClose={() => setHistoryOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col">
-        {/* Top bar — hamburger (mobile) + auth */}
+      <div className="flex-1 min-w-0 flex flex-col">
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setHistoryOpen(true)}
-              className="md:hidden text-slate-400 hover:text-white text-xl leading-none"
-            >
-              ☰
-            </button>
-            <img src="/logo.svg" alt="Munazara" className="h-7" />
-          </div>
-          <div className="flex items-center gap-3 ml-auto">
-            <Link to="/about" className="text-slate-500 hover:text-slate-300 text-xs transition-colors hidden md:block">
-              About
-            </Link>
+          <Logo className="h-5 sm:h-7 shrink min-w-0" />
+          <div className="flex items-center gap-1.5 sm:gap-2 ml-auto shrink-0">
+            <MenuButton onHistory={() => setHistoryOpen(true)} onTour={() => setTour(phase === "complete" ? "debate" : "landing")} />
+            <ThemeToggle />
             {isSignedIn ? (
-              <>
-                <span className="text-slate-500 text-xs hidden md:block">
-                  {user?.primaryEmailAddress?.emailAddress}
-                </span>
-                <UserButton afterSignOutUrl="/" />
-              </>
+              <UserButton afterSignOutUrl="/" />
             ) : (
               <SignInButton mode="modal">
-                <button className="text-xs px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors font-medium">
+                <button className="h-9 px-3 text-sm bg-amber-600 hover:bg-amber-500 text-onaccent rounded-md transition-colors font-medium">
                   Sign in
                 </button>
               </SignInButton>
@@ -302,7 +346,7 @@ export default function App() {
           <>
             <div className="flex flex-col items-center">
               {/* Mode cards */}
-              <div className="flex gap-3 mt-8 mx-6 w-full max-w-lg px-4">
+              <div data-tour="mode" className="flex gap-3 mt-8 w-full max-w-lg px-4">
                 <button
                   onClick={() => setDebateMode("ai")}
                   className={`flex-1 flex flex-col items-start gap-1 p-4 rounded-xl border text-left transition-all
@@ -347,7 +391,7 @@ export default function App() {
             </div>
             <button
               onClick={() => handleStartDebate(pendingVoteTopic)}
-              className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition-colors"
+              className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-onaccent font-semibold rounded-xl transition-colors"
             >
               <span className="inline-flex items-center gap-2"><Icon name="swords" size={17} />Start Debate</span>
             </button>
@@ -417,7 +461,7 @@ export default function App() {
                 )}
                 <button
                   onClick={handleReset}
-                  className="text-sm px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-sm uppercase tracking-wide transition-colors"
+                  className="text-sm px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-onaccent rounded-sm uppercase tracking-wide transition-colors"
                 >
                   + New Debate
                 </button>
@@ -439,7 +483,7 @@ export default function App() {
                 conPersona={conPersona}
               />
               {debateId && (
-                <div className="w-full max-w-5xl mx-auto px-4 pb-4">
+                <div data-tour="vote" className="w-full max-w-5xl mx-auto px-4 pb-4">
                   <VotePanel debateId={debateId} phase="after" topic={topic} />
                 </div>
               )}
@@ -470,6 +514,15 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {tour && (
+        <Onboarding
+          steps={tour === "debate" ? DEBATE_STEPS : LANDING_STEPS}
+          storageKey={tour === "debate" ? DEBATE_KEY : LANDING_KEY}
+          finishLabel="Got it"
+          onClose={() => setTour(null)}
+        />
+      )}
 
       <DebateDrawer
         debateId={drawerDebateId}

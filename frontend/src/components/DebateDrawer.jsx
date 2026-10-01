@@ -48,7 +48,7 @@ export default function DebateDrawer({ debateId, onClose, onViewFull }) {
       {/* Drawer */}
       <div
         className={`fixed top-0 right-0 h-full w-full md:w-[480px] z-50
-          bg-[#0d0d17] border-l border-slate-800 flex flex-col
+          bg-sheet border-l border-slate-800 flex flex-col
           transition-transform duration-300
           ${isOpen ? "translate-x-0" : "translate-x-full"}`}
       >
@@ -104,7 +104,7 @@ export default function DebateDrawer({ debateId, onClose, onViewFull }) {
           <div className="px-6 py-4 border-t border-slate-800 shrink-0">
             <button
               onClick={() => onViewFull(debate)}
-              className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition-colors"
+              className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-onaccent font-semibold rounded-xl transition-colors"
             >
               View Full Debate →
             </button>

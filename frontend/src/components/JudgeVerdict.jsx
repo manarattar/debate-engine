@@ -22,7 +22,7 @@ export default function JudgeVerdict({ verdict, winner, streaming = false }) {
   const style = WINNER_STYLES[winner] || WINNER_STYLES.tie;
 
   return (
-    <div className={`border-t-2 border-b ${style.border} border-x-0 py-6 argument-judge transition-all duration-500`}>
+    <div data-tour="verdict" className={`border-t-2 border-b ${style.border} border-x-0 py-6 argument-judge transition-all duration-500`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <span className="text-slate-500"><Icon name="scale" size={18} /></span>

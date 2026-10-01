@@ -6,6 +6,7 @@ import * as Sentry from '@sentry/react'
 import './index.css'
 import App from './App.jsx'
 import About from './components/About.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -19,6 +20,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <ErrorBoundary>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <BrowserRouter>
         <Routes>
@@ -27,5 +29,6 @@ createRoot(document.getElementById('root')).render(
         </Routes>
       </BrowserRouter>
     </ClerkProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )

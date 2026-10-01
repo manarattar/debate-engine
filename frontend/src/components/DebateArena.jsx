@@ -97,7 +97,7 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
   );
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 pb-16">
+    <div data-tour="arena" className="w-full max-w-5xl mx-auto px-4 pb-16">
       {/* Topic banner */}
       <div className="text-center mb-8 pt-6">
         <p className="text-slate-600 text-xs uppercase tracking-widest mb-2">Debate Topic</p>

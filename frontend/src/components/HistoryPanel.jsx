@@ -190,7 +190,7 @@ export default function HistoryPanel({ onSelect, currentTopic, isOpen, onClose }
       {/* Mobile drawer */}
       {isOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
-          <div className="w-72 bg-[#0a0a0f] border-r border-slate-800 flex flex-col">
+          <div className="w-72 bg-page border-r border-slate-800 flex flex-col">
             {header}
             {body}
           </div>

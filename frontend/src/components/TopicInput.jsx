@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth, SignInButton } from "@clerk/clerk-react";
 import PersonaPicker from "./PersonaPicker";
+import Logo from "./Logo";
 
 const TOPIC_CATEGORIES = [
   {
@@ -53,7 +54,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
   return (
     <div className="flex flex-col items-center gap-8 py-16 px-6">
       <div className="text-center">
-        <img src="/logo.svg" alt="Munazara" className="h-20 mx-auto mb-4" />
+        <Logo className="h-14 sm:h-20 mx-auto mb-4" />
         <p className="text-white text-lg font-medium">
           Where every idea faces its strongest opposition.
         </p>
@@ -62,7 +63,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="w-full max-w-2xl flex flex-col gap-3">
+      <form data-tour="topic" onSubmit={handleSubmit} className="w-full max-w-2xl flex flex-col gap-3">
         <textarea
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
@@ -84,7 +85,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
             type="submit"
             disabled={!topic.trim() || isLoading}
             className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-800
-              disabled:text-slate-600 text-white font-semibold py-4 rounded-sm text-base
+              disabled:text-slate-600 text-onaccent font-semibold py-4 rounded-sm text-base
               uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
           >
             {isLoading ? (
@@ -97,7 +98,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
           <SignInButton mode="modal">
             <button
               type="button"
-              className="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-4 rounded-sm text-base uppercase tracking-widest transition-colors"
+              className="w-full bg-amber-600 hover:bg-amber-500 text-onaccent font-semibold py-4 rounded-sm text-base uppercase tracking-widest transition-colors"
             >
               Sign in to start a debate
             </button>
@@ -107,6 +108,7 @@ export default function TopicInput({ onSubmit, isLoading, submitLabel }) {
 
       {/* Persona toggle */}
       <button
+        data-tour="personas"
         onClick={() => setShowPersonas((v) => !v)}
         className="text-sm text-slate-500 hover:text-amber-400 transition-colors"
       >
