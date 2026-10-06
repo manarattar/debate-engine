@@ -2,7 +2,7 @@ import sentry_sdk
 from app.config import get_settings
 from app.database import create_tables
 from app.routers import (debate, export_pdf, factcheck, graph, human_debate,
-                         reaction, vote)
+                         reaction, share, vote)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -28,6 +28,7 @@ app.include_router(vote.router, prefix="/api")
 app.include_router(reaction.router, prefix="/api")
 app.include_router(export_pdf.router, prefix="/api")
 app.include_router(graph.router, prefix="/api")
+app.include_router(share.router, prefix="/api")
 
 
 @app.on_event("startup")

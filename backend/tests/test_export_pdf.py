@@ -97,3 +97,17 @@ class TestExportEndpoint:
 
         res = client.get("/api/debate/pdf002/pdf")
         assert res.status_code == 404
+
+
+def test_markup_characters_in_content_do_not_crash():
+    result = _build_pdf(
+        "markup",
+        {
+            **SAMPLE_RESULT,
+            "topic": "Is R&D <really> worth it?",
+            "pro_arguments": [
+                {"round_name": "opening", "content": "Costs < benefits & then some", "citations": []}
+            ],
+        },
+    )
+    assert result[:4] == b"%PDF"

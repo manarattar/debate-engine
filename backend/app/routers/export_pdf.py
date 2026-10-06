@@ -1,6 +1,7 @@
 import io
 import json
 import textwrap
+from html import escape
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -48,21 +49,21 @@ def _styles():
             "title",
             parent=base["Title"],
             fontSize=18,
-            textColor=colors.HexColor("#e2e8f0"),
+            textColor=colors.HexColor("#0f172a"),
             spaceAfter=6,
         ),
         "subtitle": ParagraphStyle(
             "subtitle",
             parent=base["Normal"],
             fontSize=10,
-            textColor=colors.HexColor("#94a3b8"),
+            textColor=colors.HexColor("#475569"),
             spaceAfter=16,
         ),
         "section": ParagraphStyle(
             "section",
             parent=base["Heading2"],
             fontSize=11,
-            textColor=colors.HexColor("#a78bfa"),
+            textColor=colors.HexColor("#5b21b6"),
             spaceBefore=14,
             spaceAfter=4,
         ),
@@ -70,7 +71,7 @@ def _styles():
             "pro",
             parent=base["Normal"],
             fontSize=9,
-            textColor=colors.HexColor("#d1fae5"),
+            textColor=colors.HexColor("#065f46"),
             leading=14,
             leftIndent=10,
         ),
@@ -78,7 +79,7 @@ def _styles():
             "con",
             parent=base["Normal"],
             fontSize=9,
-            textColor=colors.HexColor("#fee2e2"),
+            textColor=colors.HexColor("#991b1b"),
             leading=14,
             leftIndent=10,
         ),
@@ -86,7 +87,7 @@ def _styles():
             "judge",
             parent=base["Normal"],
             fontSize=9,
-            textColor=colors.HexColor("#e2e8f0"),
+            textColor=colors.HexColor("#1e293b"),
             leading=14,
             leftIndent=10,
         ),
@@ -94,14 +95,14 @@ def _styles():
             "label",
             parent=base["Normal"],
             fontSize=8,
-            textColor=colors.HexColor("#64748b"),
+            textColor=colors.HexColor("#475569"),
             spaceAfter=2,
         ),
         "winner": ParagraphStyle(
             "winner",
             parent=base["Normal"],
             fontSize=13,
-            textColor=colors.HexColor("#fbbf24"),
+            textColor=colors.HexColor("#92400e"),
             spaceBefore=10,
             spaceAfter=4,
         ),
@@ -135,12 +136,12 @@ def _build_pdf(debate_id: str, result: dict) -> bytes:
     winner = result.get("winner", "").upper()
     created = datetime.now().strftime("%Y-%m-%d")
 
-    story.append(Paragraph(f"Debate: {topic}", styles["title"]))
+    story.append(Paragraph(f"Debate: {escape(topic)}", styles["title"]))
     story.append(
         Paragraph(f"ID: {debate_id}  •  Exported: {created}", styles["subtitle"])
     )
     story.append(
-        HRFlowable(width="100%", thickness=1, color=colors.HexColor("#334155"))
+        HRFlowable(width="100%", thickness=1, color=colors.HexColor("#cbd5e1"))
     )
     story.append(Spacer(1, 0.3 * cm))
 
@@ -150,7 +151,7 @@ def _build_pdf(debate_id: str, result: dict) -> bytes:
             "CON": "Winner: CON",
             "TIE": "Result: TIE",
         }.get(winner, f"Winner: {winner}")
-        story.append(Paragraph(f"🏆 {winner_text}", styles["winner"]))
+        story.append(Paragraph(winner_text, styles["winner"]))
         story.append(Spacer(1, 0.2 * cm))
 
     # Collect all args indexed by round_name + side
@@ -174,25 +175,25 @@ def _build_pdf(debate_id: str, result: dict) -> bytes:
         label = ROUND_LABELS.get(round_name, round_name.replace("_", " ").title())
         story.append(Paragraph(label, styles["section"]))
         story.append(
-            HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#1e293b"))
+            HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#e2e8f0"))
         )
 
         if is_verdict:
             story.append(Spacer(1, 0.15 * cm))
             story.append(Paragraph("[JUDGE]", styles["label"]))
             for line in _wrap(verdict["content"]).split("\n"):
-                story.append(Paragraph(line or "&nbsp;", styles["judge"]))
+                story.append(Paragraph(escape(line) or "&nbsp;", styles["judge"]))
         else:
             if has_pro:
                 story.append(Spacer(1, 0.1 * cm))
                 story.append(Paragraph("[PRO]", styles["label"]))
                 for line in _wrap(args_by_key[pro_key]["content"]).split("\n"):
-                    story.append(Paragraph(line or "&nbsp;", styles["pro"]))
+                    story.append(Paragraph(escape(line) or "&nbsp;", styles["pro"]))
             if has_con:
                 story.append(Spacer(1, 0.1 * cm))
                 story.append(Paragraph("[CON]", styles["label"]))
                 for line in _wrap(args_by_key[con_key]["content"]).split("\n"):
-                    story.append(Paragraph(line or "&nbsp;", styles["con"]))
+                    story.append(Paragraph(escape(line) or "&nbsp;", styles["con"]))
 
         story.append(Spacer(1, 0.2 * cm))
 
