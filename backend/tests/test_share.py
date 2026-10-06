@@ -62,3 +62,10 @@ def test_share_image_is_png(db_session):
 
 def test_share_image_404_for_unknown_debate():
     assert client.get("/api/share/nope/image.png").status_code == 404
+
+
+def test_head_requests_are_allowed(db_session):
+    # LinkedIn probes links with HEAD before fetching them
+    _add(db_session, "shr005", "Should exams be open book?")
+    assert client.head("/api/share?id=shr005", headers=LINKEDIN_UA).status_code == 200
+    assert client.head("/api/share/shr005/image.png").status_code == 200

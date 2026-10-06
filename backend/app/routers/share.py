@@ -34,7 +34,7 @@ def _load(db: Session, debate_id: str) -> tuple[str, str | None]:
     return debate.topic or "", None
 
 
-@router.get("/share/{debate_id}/image.png")
+@router.api_route("/share/{debate_id}/image.png", methods=["GET", "HEAD"])
 def share_image(debate_id: str, db: Session = Depends(get_db)):
     topic, winner = _load(db, debate_id)
     if not topic:
@@ -46,7 +46,7 @@ def share_image(debate_id: str, db: Session = Depends(get_db)):
     )
 
 
-@router.get("/share", response_class=HTMLResponse)
+@router.api_route("/share", methods=["GET", "HEAD"], response_class=HTMLResponse)
 def share_debate(request: Request, id: str = "", db: Session = Depends(get_db)):
     """Serve OG/Twitter preview tags for a debate, then redirect to the SPA."""
     topic, winner = _load(db, id) if id else ("", None)
