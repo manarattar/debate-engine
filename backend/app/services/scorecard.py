@@ -1,5 +1,7 @@
 """Pure rubric aggregation for the debate judge."""
 
+import math
+
 CRITERIA = [
     ("evidence", "Evidence & sources", 0.30),
     ("responsiveness", "Answering the opponent", 0.25),
@@ -54,6 +56,53 @@ def compute_scorecard(raw_scores):
     return {"criteria": criteria, "pro_total": pro_total, "con_total": con_total,
             "margin": margin, "winner": winner, "confidence": confidence,
             "method": "llm-rubric"}
+
+
+def compute_scorecard_from_probabilities(per_criterion, meta):
+    if not isinstance(per_criterion, dict):
+        return None
+    valid = {}
+    for key, _, weight in CRITERIA:
+        item = per_criterion.get(key)
+        if not isinstance(item, dict):
+            continue
+        try:
+            probabilities = {side: float(item[side]) for side in ("PRO", "CON", "EVEN")}
+            confidence = float(item["confidence"])
+        except (KeyError, TypeError, ValueError, OverflowError):
+            continue
+        if (not all(math.isfinite(p) and p >= 0 for p in probabilities.values())
+                or not math.isfinite(confidence) or sum(probabilities.values()) <= 0):
+            continue
+        total = sum(probabilities.values())
+        probabilities = {side: p / total for side, p in probabilities.items()}
+        valid[key] = (probabilities, max(0, min(1, confidence)), weight)
+    if not valid:
+        return None
+    weight_sum = sum(value[2] for value in valid.values())
+    criteria = []
+    for key, label, _ in CRITERIA:
+        if key not in valid:
+            continue
+        p, confidence, weight = valid[key]
+        leader = ("even" if p["EVEN"] >= max(p["PRO"], p["CON"]) or abs(p["PRO"] - p["CON"]) < 0.10
+                  else "pro" if p["PRO"] > p["CON"] else "con")
+        criteria.append({"key": key, "label": label, "weight": round(weight / weight_sum, 4),
+                         "pro": round(10 * (p["PRO"] + 0.5 * p["EVEN"]), 1),
+                         "con": round(10 * (p["CON"] + 0.5 * p["EVEN"]), 1),
+                         "leader": leader, "probabilities": p, "confidence": confidence})
+    pro_total = round(sum(item["pro"] * item["weight"] for item in criteria), 1)
+    con_total = round(sum(item["con"] * item["weight"] for item in criteria), 1)
+    margin = round(abs(pro_total - con_total), 1)
+    band = "too_close" if margin < 1 else "narrow" if margin < 2 else "clear" if margin < 4 else "decisive"
+    meta = meta or {}
+    if (sum(item["confidence"] for item in criteria) / len(criteria) < 0.20
+            or meta.get("disagreed") or meta.get("single_run")) and band in ("clear", "decisive"):
+        band = "narrow"
+    return {"criteria": criteria, "pro_total": pro_total, "con_total": con_total,
+            "margin": margin, "winner": "tie" if margin < 1 else "pro" if pro_total > con_total else "con",
+            "confidence": band, "method": "jev", "model": meta.get("model"),
+            "latency_ms": meta.get("latency_ms")}
 
 
 def merge_swapped(a, b):

@@ -5,8 +5,8 @@ from fastapi.testclient import TestClient
 from app.database import Debate
 from app.main import app
 from app.schemas import Argument, DebateResult, Side
-from app.services import debate_agent
-from app.services.scorecard import compute_scorecard, merge_swapped
+from app.services import debate_agent, jev_judge
+from app.services.scorecard import compute_scorecard, compute_scorecard_from_probabilities, merge_swapped
 
 
 def raw(pro=8, con=6):
@@ -47,7 +47,19 @@ def test_transcript_round_order_and_caps():
     text = debate_agent.build_transcript(pro, con)
     assert text.index("pro open") < text.index("con open") < text.index("pro close") < text.index("con close")
     long = [arg(Side.pro, name, "x" * 2000) for name in ("opening", "rebuttal", "closing")]
-    assert len(debate_agent.build_transcript(long, long)) <= 7000
+    assert len(debate_agent.build_transcript(long, long)) <= 16000
+    assert "x" * 1400 in debate_agent.build_transcript(long, long)
+    many = [arg(Side.pro, "opening", f"start-{i}-" + "x" * 2000) for i in range(20)]
+    many += [arg(Side.pro, "closing", "last closing")]
+    shrunk = debate_agent.build_transcript(many, many)
+    assert len(shrunk) <= 16000 and "last closing" in shrunk
+    assert "x" * 1400 not in shrunk
+    pro.append(arg(Side.pro, "cross_pro_questions", "pro asks"))
+    con.append(arg(Side.con, "cross_con_questions", "con asks"))
+    swapped = debate_agent.build_transcript(pro, con, swap=True)
+    assert swapped.index("PRO: con open") < swapped.index("CON: pro open")
+    assert "Cross-examination: CON questions\nCON: pro asks" in swapped
+    assert "Cross-examination: PRO questions\nPRO: con asks" in swapped
 
 
 def test_score_rubric_json_fence_and_garbage(monkeypatch):
@@ -63,8 +75,15 @@ def test_score_rubric_json_fence_and_garbage(monkeypatch):
 
 
 def test_judge_swap_check(monkeypatch):
-    monkeypatch.setattr(debate_agent, "score_rubric", lambda topic, transcript: raw(8, 6) if transcript.startswith("PRO") else raw(6, 8))
-    assert debate_agent.judge_scorecard("topic", "PRO: original")["winner"] == "pro"
+    pro = [Argument(side=Side.pro, round_name="opening", content="original pro")]
+    con = [Argument(side=Side.con, round_name="opening", content="original con")]
+    seen = []
+    def score(topic, transcript):
+        seen.append(transcript)
+        return raw(8, 6) if "PRO: original pro" in transcript else raw(6, 8)
+    monkeypatch.setattr(debate_agent, "score_rubric", score)
+    assert debate_agent.judge_scorecard("topic", pro, con)["winner"] == "pro"
+    assert any("PRO: original con\nCON: original pro" in text for text in seen)
 
 
 def test_saved_debate_round_trip_and_old_defaults(db_session):

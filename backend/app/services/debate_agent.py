@@ -15,7 +15,7 @@ JUDGE_SWAP_CHECK = True
 logger = logging.getLogger(__name__)
 
 
-def build_transcript(pro_args: list, con_args: list) -> str:
+def build_transcript(pro_args: list, con_args: list, swap: bool = False) -> str:
     """Lay out every debate turn in spoken order within a bounded context."""
     rounds = [
         ("Opening", "opening", "opening"),
@@ -27,18 +27,29 @@ def build_transcript(pro_args: list, con_args: list) -> str:
         ("Closing", "closing", "closing"),
     ]
     parts = []
+    speakers = (("PRO", con_args, "con"), ("CON", pro_args, "pro")) if swap else (("PRO", pro_args, "pro"), ("CON", con_args, "con"))
     for label, pro_round, con_round in rounds:
-        lines = []
-        for side, args, name in (("PRO", pro_args, pro_round), ("CON", con_args, con_round)):
+        entries = []
+        for side, args, original_side in speakers:
+            name = pro_round if original_side == "pro" else con_round
             if name:
-                lines.extend(f"{side}: {arg.content[:650]}" for arg in args if arg.round_name == name)
-        if lines:
-            parts.append(label + "\n" + "\n".join(lines))
-    return "\n\n".join(parts)[:7000]
+                entries.extend((side, arg.content) for arg in args if arg.round_name == name)
+        if entries:
+            heading = re.sub(r"\b(PRO|CON)\b", lambda m: "CON" if m.group() == "PRO" else "PRO", label) if swap else label
+            parts.append((heading, entries))
 
+    def render(cap):
+        return "\n\n".join(heading + "\n" + "\n".join(f"{side}: {content[:cap]}" for side, content in entries)
+                           for heading, entries in parts)
 
-def _swap_labels(transcript: str) -> str:
-    return re.sub(r"\b(PRO|CON)\b", lambda m: "CON" if m.group() == "PRO" else "PRO", transcript)
+    low, high = 0, 1400
+    while low < high:
+        mid = (low + high + 1) // 2
+        if len(render(mid)) <= 16000:
+            low = mid
+        else:
+            high = mid - 1
+    return render(low)
 
 
 def score_rubric(topic: str, transcript: str) -> dict | None:
@@ -65,14 +76,15 @@ def score_rubric(topic: str, transcript: str) -> dict | None:
         return None
 
 
-def judge_scorecard(topic: str, transcript: str) -> dict | None:
+def judge_scorecard(topic: str, pro_args: list, con_args: list) -> dict | None:
     from concurrent.futures import ThreadPoolExecutor
 
+    transcript = build_transcript(pro_args, con_args)
     if not JUDGE_SWAP_CHECK:
         return compute_scorecard(score_rubric(topic, transcript))
     with ThreadPoolExecutor(max_workers=2) as pool:
         original = pool.submit(score_rubric, topic, transcript)
-        swapped = pool.submit(score_rubric, topic, _swap_labels(transcript))
+        swapped = pool.submit(score_rubric, topic, build_transcript(pro_args, con_args, swap=True))
         a, b = original.result(), swapped.result()
     if b:
         b = {key: {"pro": pair["con"], "con": pair["pro"]} for key, pair in b.items()}

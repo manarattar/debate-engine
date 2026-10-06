@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     openai_base_url: str = "https://api.openai.com/v1"
     model_name: str = "gpt-4o-mini"
     tavily_api_key: str = ""
+    typesafe_api_key: str = ""
+    jev_model: str = "jev-latest"
     mock_mode: bool = False
 
     # Clerk — required in production; backend uses this to verify frontend JWTs

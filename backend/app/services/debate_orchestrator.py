@@ -9,6 +9,7 @@ from app.services.debate_agent import (build_transcript, judge_scorecard, extrac
                                        generate_argument_streaming,
                                        generate_search_queries,
                                        score_arguments)
+from app.services.jev_judge import jev_available, judge_jev
 from app.services.debate_indexer import index_sources, retrieve
 from app.services.source_collector import collect_sources
 
@@ -22,6 +23,13 @@ def _sse(event_type: str, data) -> str:
 
 async def _exec(loop, fn, *args):
     return await loop.run_in_executor(None, fn, *args)
+
+
+def _judge_with_fallback(topic, pro_args, con_args):
+    scorecard = judge_jev(topic, pro_args, con_args) if jev_available() else None
+    if scorecard is None:
+        scorecard = judge_scorecard(topic, pro_args, con_args)
+    return scorecard
 
 
 async def _stream_argument(
@@ -415,7 +423,9 @@ async def run_debate(
             "status", {"message": "Judge is deliberating...", "step": 7, "total": 7}
         )
         transcript = build_transcript(pro_args, con_args)
-        scorecard = await _exec(loop, judge_scorecard, topic, transcript)
+        scorecard = await _exec(loop, _judge_with_fallback, topic, pro_args, con_args)
+        if scorecard:
+            logger.info("Judge scorecard method=%s latency_ms=%s", scorecard["method"], scorecard.get("latency_ms"))
         if scorecard:
             yield _sse("scorecard", scorecard)
         judge_chunks = await _exec(loop, retrieve, debate_id, "pro", topic, 2)
