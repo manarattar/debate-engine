@@ -63,15 +63,20 @@ export default function JudgeVerdict({ verdict, winner, scorecard = null, stream
           </div>
           <div className="space-y-3">
             {scorecard.criteria.map((item) => (
-              <div key={item.key} role="group" aria-label={`${item.label}: PRO ${item.pro}, CON ${item.con}`}>
+              <div key={item.key} role="group" aria-label={item.probabilities ? `${item.label}: PRO ${Math.round(item.probabilities.PRO * 100)}%, EVEN ${Math.round(item.probabilities.EVEN * 100)}%, CON ${Math.round(item.probabilities.CON * 100)}%` : `${item.label}: PRO ${item.pro}, CON ${item.con}`}>
                 <div className="mb-1 flex justify-between gap-2 text-xs">
-                  <span className="min-w-0 break-words">{item.label}</span>
-                  <span className="shrink-0 font-mono"><span className="text-sky-300">{item.pro}</span> / <span className="text-rose-300">{item.con}</span></span>
+                  <span className="min-w-0 break-words">{item.label}{item.probabilities && item.confidence < 0.20 && <span className="ml-2 text-amber-300" title="Low confidence">low confidence</span>}</span>
+                  {!item.probabilities && <span className="shrink-0 font-mono"><span className="text-sky-300">{item.pro}</span> / <span className="text-rose-300">{item.con}</span></span>}
                 </div>
-                <div className="grid grid-cols-2 gap-1" aria-hidden="true">
+                {item.probabilities ? <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-700" aria-hidden="true">
+                  <div className="bg-sky-400" style={{ width: `${item.probabilities.PRO * 100}%` }} />
+                  <div className="bg-slate-400" style={{ width: `${item.probabilities.EVEN * 100}%` }} />
+                  <div className="bg-rose-400" style={{ width: `${item.probabilities.CON * 100}%` }} />
+                </div> : <div className="grid grid-cols-2 gap-1" aria-hidden="true">
                   <div className="h-1.5 rounded-full bg-slate-700"><div className="h-full rounded-full bg-sky-400" style={{ width: `${item.pro * 10}%` }} /></div>
                   <div className="h-1.5 rounded-full bg-slate-700"><div className="h-full rounded-full bg-rose-400" style={{ width: `${item.con * 10}%` }} /></div>
-                </div>
+                </div>}
+                {item.probabilities && <div className="mt-1 flex justify-between font-mono text-xs" aria-hidden="true"><span className="text-sky-300">PRO {Math.round(item.probabilities.PRO * 100)}%</span><span className="text-slate-400">EVEN {Math.round(item.probabilities.EVEN * 100)}%</span><span className="text-rose-300">CON {Math.round(item.probabilities.CON * 100)}%</span></div>}
               </div>
             ))}
           </div>
@@ -79,6 +84,7 @@ export default function JudgeVerdict({ verdict, winner, scorecard = null, stream
             <span>Totals: <span className="text-sky-300">PRO {scorecard.pro_total.toFixed(1)}</span> / <span className="text-rose-300">CON {scorecard.con_total.toFixed(1)}</span></span>
             <span>Margin {scorecard.margin.toFixed(1)}</span>
           </div>
+          {scorecard.method === "jev" && <p className="mt-3 text-xs text-slate-400">Scored by Jev, a decision model: each criterion is a probability, not a generated opinion.</p>}
         </div>
       )}
 
