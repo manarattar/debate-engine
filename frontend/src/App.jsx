@@ -132,6 +132,7 @@ export default function App() {
   const [verdict, setVerdict] = useState(null);
   const [winner, setWinner] = useState(null);
   const [scores, setScores] = useState({});        // {pro_opening: 8, con_opening: 6, ...}
+  const [scorecard, setScorecard] = useState(null);
   const [reactions, setReactions] = useState({});  // {pro_opening: {likes, dislikes}, ...}
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -160,6 +161,8 @@ export default function App() {
         setEvents(allArgs);
         setVerdict(data.verdict || null);
         setWinner(data.winner || null);
+        setScores(data.scores || {});
+        setScorecard(data.scorecard || null);
         setPhase("complete");
       }).catch(() => {});
     }
@@ -186,6 +189,7 @@ export default function App() {
     setVerdict(null);
     setWinner(null);
     setScores({});
+    setScorecard(null);
     setReactions({});
     setError(null);
     setDebateId(generateDebateId());
@@ -221,6 +225,8 @@ export default function App() {
           setWinner(msg.data.winner);
         } else if (msg.type === "scores") {
           setScores(msg.data);
+        } else if (msg.type === "scorecard") {
+          setScorecard(msg.data);
         } else if (msg.type === "complete") {
           setPhase("complete");
           if (!hasSeenTour(DEBATE_KEY)) setTimeout(() => setTour("debate"), 600);
@@ -253,6 +259,8 @@ export default function App() {
       setEvents(allArgs);
       setVerdict(data.verdict || null);
       setWinner(data.winner || null);
+      setScores(data.scores || {});
+      setScorecard(data.scorecard || null);
       setStreaming(null);
       setStatus(null);
       setPhase("complete");
@@ -269,6 +277,7 @@ export default function App() {
     setVerdict(null);
     setWinner(null);
     setScores({});
+    setScorecard(null);
     setReactions({});
     setError(null);
     setDebateId(generateDebateId());
@@ -293,6 +302,8 @@ export default function App() {
     setEvents(allArgs);
     setVerdict(data.verdict || null);
     setWinner(data.winner || null);
+    setScores(data.scores || {});
+    setScorecard(data.scorecard || null);
     setStreaming(null);
     setStatus(null);
     setPhase("complete");
@@ -312,6 +323,7 @@ export default function App() {
     setVerdict(null);
     setWinner(null);
     setScores({});
+    setScorecard(null);
     setReactions({});
     setError(null);
   };
@@ -418,6 +430,7 @@ export default function App() {
                 verdict={verdict}
                 winner={winner}
                 scores={scores}
+                scorecard={scorecard}
                 reactions={reactions}
                 debateId={debateId}
                 isLive={true}
@@ -476,6 +489,7 @@ export default function App() {
                 verdict={verdict}
                 winner={winner}
                 scores={scores}
+                scorecard={scorecard}
                 reactions={reactions}
                 debateId={debateId}
                 isLive={false}

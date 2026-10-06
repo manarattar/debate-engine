@@ -7,7 +7,7 @@ const WINNER_STYLES = {
   tie: { label: "TIE", color: "text-amber-400", border: "border-amber-500/30", bg: "" },
 };
 
-export default function JudgeVerdict({ verdict, winner, streaming = false }) {
+export default function JudgeVerdict({ verdict, winner, scorecard = null, streaming = false }) {
   const [showSources, setShowSources] = useState(false);
   const [revealed, setRevealed] = useState(streaming);
 
@@ -35,7 +35,7 @@ export default function JudgeVerdict({ verdict, winner, streaming = false }) {
               }`}
               style={{ transform: revealed && !streaming ? "translateY(0)" : "translateY(-8px)" }}
             >
-              <span className={`text-xl font-bold ${style.color}`}>{style.label}</span>
+              <span className={`text-xl font-bold ${style.color}`}>{winner === "tie" && scorecard?.confidence === "too_close" ? "TOO CLOSE TO CALL" : style.label}</span>
             </div>
             {streaming && (
               <span className="text-sm text-slate-500 animate-pulse">Deliberating...</span>
@@ -52,6 +52,35 @@ export default function JudgeVerdict({ verdict, winner, streaming = false }) {
           </button>
         )}
       </div>
+
+      {scorecard && !streaming && (
+        <div className="mb-5 rounded-lg border border-slate-700 bg-slate-900/60 p-3 sm:p-4 text-slate-200">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wide">Scorecard</h3>
+            <span className="rounded-full border border-slate-600 px-2 py-0.5 text-xs text-slate-200">
+              {{ decisive: "Decisive", clear: "Clear", narrow: "Narrow", too_close: "Too close to call" }[scorecard.confidence]}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {scorecard.criteria.map((item) => (
+              <div key={item.key} role="group" aria-label={`${item.label}: PRO ${item.pro}, CON ${item.con}`}>
+                <div className="mb-1 flex justify-between gap-2 text-xs">
+                  <span className="min-w-0 break-words">{item.label}</span>
+                  <span className="shrink-0 font-mono"><span className="text-sky-300">{item.pro}</span> / <span className="text-rose-300">{item.con}</span></span>
+                </div>
+                <div className="grid grid-cols-2 gap-1" aria-hidden="true">
+                  <div className="h-1.5 rounded-full bg-slate-700"><div className="h-full rounded-full bg-sky-400" style={{ width: `${item.pro * 10}%` }} /></div>
+                  <div className="h-1.5 rounded-full bg-slate-700"><div className="h-full rounded-full bg-rose-400" style={{ width: `${item.con * 10}%` }} /></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-700 pt-3 text-xs font-semibold">
+            <span>Totals: <span className="text-sky-300">PRO {scorecard.pro_total.toFixed(1)}</span> / <span className="text-rose-300">CON {scorecard.con_total.toFixed(1)}</span></span>
+            <span>Margin {scorecard.margin.toFixed(1)}</span>
+          </div>
+        </div>
+      )}
 
       <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
         {verdict.content}

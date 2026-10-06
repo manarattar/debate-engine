@@ -93,6 +93,8 @@ def get_debate(debate_id: str, db: Session = Depends(get_db)):
     db.commit()
 
     result = json.loads(debate.result_json)
+    result.setdefault("scores", {})
+    result.setdefault("scorecard", None)
     result["view_count"] = new_view_count
     return result
 

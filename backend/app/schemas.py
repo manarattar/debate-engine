@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class Side(str, Enum):
@@ -50,6 +50,8 @@ class DebateResult(BaseModel):
     pro_sources: list[Citation]
     con_sources: list[Citation]
     winner: str  # "pro" / "con" / "tie"
+    scores: dict[str, int] = Field(default_factory=dict)
+    scorecard: Optional[dict] = None
 
 
 class DebateSummary(BaseModel):

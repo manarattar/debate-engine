@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import re
 import threading
 import time
@@ -7,8 +8,75 @@ import time
 from app.config import get_settings
 from app.schemas import Argument, Citation, Side
 from openai import OpenAI, RateLimitError
+from app.services.scorecard import CRITERIA, clean_scores, compute_scorecard, merge_swapped
 
 settings = get_settings()
+JUDGE_SWAP_CHECK = True
+logger = logging.getLogger(__name__)
+
+
+def build_transcript(pro_args: list, con_args: list) -> str:
+    """Lay out every debate turn in spoken order within a bounded context."""
+    rounds = [
+        ("Opening", "opening", "opening"),
+        ("Cross-examination: PRO questions", "cross_pro_questions", None),
+        ("Cross-examination: CON answers", None, "cross_con_answers"),
+        ("Cross-examination: CON questions", None, "cross_con_questions"),
+        ("Cross-examination: PRO answers", "cross_pro_answers", None),
+        ("Rebuttal", "rebuttal", "rebuttal"),
+        ("Closing", "closing", "closing"),
+    ]
+    parts = []
+    for label, pro_round, con_round in rounds:
+        lines = []
+        for side, args, name in (("PRO", pro_args, pro_round), ("CON", con_args, con_round)):
+            if name:
+                lines.extend(f"{side}: {arg.content[:650]}" for arg in args if arg.round_name == name)
+        if lines:
+            parts.append(label + "\n" + "\n".join(lines))
+    return "\n\n".join(parts)[:7000]
+
+
+def _swap_labels(transcript: str) -> str:
+    return re.sub(r"\b(PRO|CON)\b", lambda m: "CON" if m.group() == "PRO" else "PRO", transcript)
+
+
+def score_rubric(topic: str, transcript: str) -> dict | None:
+    """Request a strict rubric score set; failures are non-fatal."""
+    keys = ", ".join(key for key, _, _ in CRITERIA)
+    prompt = (f'Topic: {topic}\nDebate transcript:\n{transcript}\n\n'
+              f"Score only claims present in the transcript. Return only JSON with keys {keys}; "
+              'each key must contain integer "pro" and "con" scores from 1 to 10. '
+              'Example: {"evidence":{"pro":7,"con":5},"responsiveness":{"pro":7,"con":5},'
+              '"logic":{"pro":7,"con":5},"persuasion":{"pro":7,"con":5}}')
+    try:
+        response = _call_with_retry(lambda: _make_client().chat.completions.create(
+            model=settings.model_name,
+            messages=[{"role": "system", "content": "You are an impartial debate rubric judge. Return only valid JSON."},
+                      {"role": "user", "content": prompt}],
+            temperature=0.1, max_tokens=250, response_format={"type": "json_object"},
+        ))
+        content = response.choices[0].message.content.strip()
+        content = re.sub(r"```(?:json)?", "", content).strip().strip("`")
+        parsed = json.loads(content)
+        return clean_scores(parsed) or None
+    except Exception:
+        logger.warning("Rubric scoring failed", exc_info=True)
+        return None
+
+
+def judge_scorecard(topic: str, transcript: str) -> dict | None:
+    from concurrent.futures import ThreadPoolExecutor
+
+    if not JUDGE_SWAP_CHECK:
+        return compute_scorecard(score_rubric(topic, transcript))
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        original = pool.submit(score_rubric, topic, transcript)
+        swapped = pool.submit(score_rubric, topic, _swap_labels(transcript))
+        a, b = original.result(), swapped.result()
+    if b:
+        b = {key: {"pro": pair["con"], "con": pair["pro"]} for key, pair in b.items()}
+    return merge_swapped(a, b)
 
 
 def _make_client() -> OpenAI:
@@ -118,18 +186,16 @@ Your opponent argued:
 
 Write your rebuttal in 2 paragraphs. Address the key opponent points using your sources."""
     elif round_name == "verdict":
-        pro_text = (opponent_arguments[0] if opponent_arguments else "")[:400]
-        con_text = (opponent_arguments[1] if len(opponent_arguments) > 1 else "")[:400]
-        user_prompt = f"""PRO side argued:
-{pro_text}
-
-CON side argued:
-{con_text}
-
-Supporting sources:
-{context}
-
-Deliver your impartial verdict."""
+        transcript = opponent_arguments[0] if opponent_arguments else ""
+        scorecard = opponent_arguments[1] if opponent_arguments and len(opponent_arguments) > 1 else None
+        if scorecard:
+            summary = json.dumps(scorecard, ensure_ascii=True)
+            user_prompt = (f"Full transcript:\n{transcript}\n\nComputed scorecard: {summary}\n\n"
+                           "Explain the computed winner, margin, confidence, and decisive criterion. "
+                           "Describe what both sides did well and their key weaknesses. "
+                           f"Do not contradict the scorecard. End with WINNER: {scorecard['winner'].upper()}.")
+        else:
+            user_prompt = f"Full transcript:\n{transcript}\n\nDeliver your impartial verdict."
     else:
         user_prompt = f"""Sources:
 {context}
@@ -174,8 +240,8 @@ CROSS_ANSWER_SYSTEM = (
     "Keep each answer to 2-3 sentences. Address both questions in order (1. then 2.)."
 )
 
-JUDGE_SYSTEM = """You are an impartial judge evaluating a structured debate on: "{topic}"
-Analyze all arguments from both sides fairly. Identify the strongest and weakest points.
+JUDGE_SYSTEM = """You are an impartial judge explaining a structured debate on: "{topic}"
+Analyze the full transcript fairly. When given a computed scorecard, explain its result without changing it.
 Structure your verdict as:
 1. What the PRO side argued well
 2. What the CON side argued well
@@ -227,7 +293,7 @@ async def generate_argument_streaming(
                 return client.chat.completions.create(
                     model=settings.model_name,
                     messages=messages,
-                    temperature=0.7,
+                    temperature=0.3 if round_name == "verdict" else 0.7,
                     max_tokens=token_limit,
                     stream=True,
                 )
@@ -330,10 +396,10 @@ def score_arguments(topic: str, pro_args: list, con_args: list) -> dict:
     entries = []
     for a in pro_args:
         if a.round_name in scoreable_rounds:
-            entries.append({"key": f"pro_{a.round_name}", "content": a.content[:300]})
+            entries.append({"key": f"pro_{a.round_name}", "content": a.content[:600]})
     for a in con_args:
         if a.round_name in scoreable_rounds:
-            entries.append({"key": f"con_{a.round_name}", "content": a.content[:300]})
+            entries.append({"key": f"con_{a.round_name}", "content": a.content[:600]})
 
     if not entries:
         return {}

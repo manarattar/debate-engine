@@ -1,9 +1,11 @@
 import asyncio
 import json
+import logging
+import re
 from typing import AsyncGenerator
 
 from app.schemas import Argument, DebateResult, Side
-from app.services.debate_agent import (extract_winner,
+from app.services.debate_agent import (build_transcript, judge_scorecard, extract_winner,
                                        generate_argument_streaming,
                                        generate_search_queries,
                                        score_arguments)
@@ -11,6 +13,7 @@ from app.services.debate_indexer import index_sources, retrieve
 from app.services.source_collector import collect_sources
 
 KEEPALIVE = ": keepalive\n\n"
+logger = logging.getLogger(__name__)
 
 
 def _sse(event_type: str, data) -> str:
@@ -411,14 +414,16 @@ async def run_debate(
         yield _sse(
             "status", {"message": "Judge is deliberating...", "step": 7, "total": 7}
         )
-        pro_full = "\n\n".join(a.content for a in pro_args)
-        con_full = "\n\n".join(a.content for a in con_args)
+        transcript = build_transcript(pro_args, con_args)
+        scorecard = await _exec(loop, judge_scorecard, topic, transcript)
+        if scorecard:
+            yield _sse("scorecard", scorecard)
         judge_chunks = await _exec(loop, retrieve, debate_id, "pro", topic, 2)
         judge_chunks += await _exec(loop, retrieve, debate_id, "con", topic, 2)
 
         verdict_content = ""
         async for chunk in _stream_argument(
-            topic, Side.judge, "verdict", judge_chunks, [pro_full, con_full]
+            topic, Side.judge, "verdict", judge_chunks, [transcript, scorecard]
         ):
             yield chunk
             try:
@@ -428,7 +433,9 @@ async def run_debate(
             except Exception:
                 pass
 
-        winner = extract_winner(verdict_content)
+        winner = scorecard["winner"] if scorecard else extract_winner(verdict_content)
+        if not scorecard and not re.search(r"WINNER\s*:\s*(PRO|CON|TIE)\b", verdict_content, re.I) and winner == "tie":
+            logger.warning("Judge verdict winner could not be parsed; defaulting to tie")
         yield _sse("winner", {"winner": winner})
 
         # Score each main-round argument (non-blocking, single LLM call)
@@ -466,6 +473,8 @@ async def run_debate(
                 for i, s in enumerate(con_sources[:8])
             ],
             winner=winner,
+            scores=scores,
+            scorecard=scorecard,
         )
 
         if capture is not None:

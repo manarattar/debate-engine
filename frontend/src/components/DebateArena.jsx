@@ -82,7 +82,7 @@ function RoundColumns({ round, proArgs, conArgs, streaming, scores, debateId, re
   );
 }
 
-export default function DebateArena({ topic, events, streaming, status, verdict, winner, scores = {}, reactions = {}, debateId, isLive, proPersona, conPersona }) {
+export default function DebateArena({ topic, events, streaming, status, verdict, winner, scores = {}, scorecard = null, reactions = {}, debateId, isLive, proPersona, conPersona }) {
   const proArgs = events.filter((e) => e.side === "pro");
   const conArgs = events.filter((e) => e.side === "con");
 
@@ -185,7 +185,7 @@ export default function DebateArena({ topic, events, streaming, status, verdict,
           {streaming?.side === "judge" ? (
             <JudgeVerdict verdict={{ content: streaming.content, citations: [] }} winner={null} streaming={true} />
           ) : (
-            <JudgeVerdict verdict={verdict} winner={winner} streaming={false} />
+            <JudgeVerdict verdict={verdict} winner={winner} scorecard={scorecard} streaming={false} />
           )}
         </div>
       )}

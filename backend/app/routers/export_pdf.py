@@ -179,6 +179,15 @@ def _build_pdf(debate_id: str, result: dict) -> bytes:
         )
 
         if is_verdict:
+            card = result.get("scorecard")
+            if card:
+                story.append(Paragraph("Scorecard", styles["section"]))
+                for item in card.get("criteria", []):
+                    line = f"{item['label']}: PRO {item['pro']} / CON {item['con']}"
+                    story.append(Paragraph(escape(line), styles["judge"]))
+                totals = f"Totals: PRO {card['pro_total']} / CON {card['con_total']} | Margin {card['margin']} | {card['confidence'].replace('_', ' ').title()}"
+                story.append(Paragraph(escape(totals), styles["judge"]))
+                story.append(Spacer(1, 0.15 * cm))
             story.append(Spacer(1, 0.15 * cm))
             story.append(Paragraph("[JUDGE]", styles["label"]))
             for line in _wrap(verdict["content"]).split("\n"):
