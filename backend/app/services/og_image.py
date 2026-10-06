@@ -1,7 +1,6 @@
 """Render 1200x630 link-preview cards (LinkedIn, WhatsApp, X) for a debate."""
 
 import io
-import math
 from functools import lru_cache
 from pathlib import Path
 
@@ -20,6 +19,18 @@ MUTED = (148, 163, 184)
 PRO = (16, 185, 129)
 CON = (239, 68, 68)
 GOLD = (251, 191, 36)
+LOGO_GOLD = (217, 162, 58)  # --b-500 (dark)
+LOGO_INDIGO = (142, 143, 220)  # --a-500 (dark) at 0.85 over gold
+
+_LOGO_STAR = [
+    (32, 6), (36.6, 20.9), (50.4, 13.6), (43.1, 27.4), (58, 32), (43.1, 36.6),
+    (50.4, 50.4), (36.6, 43.1), (32, 58), (27.4, 43.1), (13.6, 50.4), (20.9, 36.6),
+    (6, 32), (20.9, 27.4), (13.6, 13.6), (27.4, 20.9),
+]
+_LOGO_OCT = [
+    (36.6, 20.9), (43.1, 27.4), (43.1, 36.6), (36.6, 43.1),
+    (27.4, 43.1), (20.9, 36.6), (20.9, 27.4), (27.4, 20.9),
+]
 
 
 def _font(weight: int, size: int) -> ImageFont.FreeTypeFont:
@@ -41,15 +52,15 @@ def _background() -> Image.Image:
 
 
 def _star(draw: ImageDraw.ImageDraw, cx: float, cy: float, r: float) -> None:
-    """The Munazara 8-pointed star logo mark."""
-    outer, inner = r, r * 0.46
-    pts = []
-    for i in range(16):
-        rad = outer if i % 2 == 0 else inner
-        a = math.pi / 2 - i * math.pi / 8
-        pts.append((cx + rad * math.cos(a), cy - rad * math.sin(a)))
-    draw.polygon(pts, fill=VIOLET)
-    draw.ellipse((cx - r * 0.2, cy - r * 0.2, cx + r * 0.2, cy + r * 0.2), fill=BG_TOP)
+    """The Munazara logo mark; same geometry as frontend Logo.jsx (dark theme)."""
+    k = r / 26
+
+    def tf(pts):
+        return [(cx + (x - 32) * k, cy + (y - 32) * k) for x, y in pts]
+
+    draw.polygon(tf(_LOGO_STAR), fill=LOGO_GOLD)
+    draw.polygon(tf(_LOGO_OCT), fill=LOGO_INDIGO)
+    draw.ellipse((cx - 6 * k, cy - 6 * k, cx + 6 * k, cy + 6 * k), fill=WHITE)
 
 
 def _wrap(draw, text: str, font, max_w: int) -> list[str]:
